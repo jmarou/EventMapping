@@ -1,8 +1,9 @@
 import "bootstrap/dist/css/bootstrap.min.css";
-import { Navbar, Nav, Container, Form } from "react-bootstrap";
+import { Col, Row, Navbar, Nav, Container, Form } from "react-bootstrap";
 import React from "react";
 import axios from "axios";
 import { Switch, Route, Link, useHistory } from "react-router-dom";
+import LeafletMap from "./LeafletMap.js";
 
 
 function EventMapping(props) {
@@ -58,7 +59,7 @@ function EventMapping(props) {
           </Container>
         </Navbar>
 
-        <Container fluid id="internalContainer"> */}
+        <Container fluid id="internalContainer"> */
             <Route path="/" render={() => <LeafletMap />}></Route>
         </Container>
       </div>
