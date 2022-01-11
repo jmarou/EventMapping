@@ -1,4 +1,5 @@
 import "bootstrap/dist/css/bootstrap.min.css";
+import "./App.css";
 import { Col, Row, Navbar, Nav, Container, Form } from "react-bootstrap";
 import React from "react";
 import axios from "axios";
@@ -6,10 +7,11 @@ import { Switch, Route, Link, useHistory } from "react-router-dom";
 import LeafletMap from "./LeafletMap.js";
 
 
-function EventMapping(props) {
-//   let history = useHistory();
+function App(props) {
+  // let history = useHistory();
   let [home, setHome] = React.useState(true);
-  
+  console.log("ok");
+
   return (
     <React.Fragment>
       <div id="mainContainer">
@@ -81,4 +83,4 @@ function EventMapping(props) {
   );
 }
 
-export default EventMapping;
+export default App;

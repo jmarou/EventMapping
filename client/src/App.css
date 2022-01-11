@@ -1,0 +1,63 @@
+body {
+    font-family: "Roboto", sans-serif !important;
+}
+
+#mainContainer {
+    display: flex;
+    flex-direction: column;
+    height: 95vh;
+}
+
+#mainContainer {
+    display: flex;
+    flex-direction: column;
+    height: 95vh;
+} 
+  
+#headerPhoto {
+    height: 3rem;
+    background-position: 50%;
+    font-size: 3rem;
+}
+  
+#compolivenavbar {
+    background-color: Indigo;
+    padding-block-start: 0;
+    padding-block-end: 0;
+}
+  
+#navbarContainer {
+    margin-inline-start: 5%;
+    margin-inline-end: 0;
+}
+  
+#internalContainer {
+    flex-grow: 1;
+    padding: 0;
+}
+  
+#footerContainer {
+    line-height: 200%;
+    background-color: Indigo;
+    height: 5vh;
+    color: #708090;
+}
+  
+#footer {
+    padding-right: 3%;
+    direction: rtl;
+}
+  
+#mapMainContainer {   
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    display: flex;
+} 
+  
+  
+#mapid {  
+    flex-grow: 1;   
+    height: 100%;
+} 
+  

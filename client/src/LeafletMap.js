@@ -2,11 +2,11 @@ import "leaflet-easybutton";
 import axios from "axios";
 import React from "react";
 import { Col, Row, Navbar, Nav, Container, Form } from "react-bootstrap";
-import * as L from "leaflet/dist/leaflet";
-
+// import * as L from "leaflet/dist/leaflet";
+// import "leaflet/dist/leaflet";
 
 let LeafletMap = (props) => {
-
+    let L = window.L;
     React.useEffect(() => {
         const home = {
             lat: 51.505,
@@ -16,35 +16,35 @@ let LeafletMap = (props) => {
         const OpenStreetMap = L.tileLayer(
             "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
             {
-              maxZoom: 20,
-              maxNativeZoom: 19,
-              attribution:
+                maxZoom: 20,
+                maxNativeZoom: 19,
+                attribution:
                 '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             }
-          );
-      
+            );
+            
         const Google_Terrain = L.tileLayer(
             "http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
             {
-              maxZoom: 20,
-              maxNativeZoom: 19,
-              subdomains: ["mt0", "mt1", "mt2", "mt3"],
+                maxZoom: 20,
+                maxNativeZoom: 19,
+                subdomains: ["mt0", "mt1", "mt2", "mt3"],
             }
-          );
-      
+            );
+            
         const OpenTopoMap = L.tileLayer(
             "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
             {
-              maxZoom: 20,
-              maxNativeZoom: 19,
-              attribution:
+                maxZoom: 20,
+                maxNativeZoom: 19,
+                attribution:
                 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
             }
-          );
-        
+            );
+                
         if (document.getElementById("mapid")) {
             document.getElementById("mapid")._leaflet_id = null;
-
+            
             let map = new L.map("mapid", {zoomControl: false, cursor: true});
             map.setView([home.lat, home.lng], home.zoom, false);
             
@@ -53,7 +53,7 @@ let LeafletMap = (props) => {
                 OpenStreetMap: OpenStreetMap,
                 "Google Terrain": Google_Terrain,
                 OpenTopoMap: OpenTopoMap,
-            };
+            }.addTo(map);
             
             L.control.zoom({ position: "topleft" }).addTo(map);
             
@@ -63,21 +63,21 @@ let LeafletMap = (props) => {
                     map.setView([home.lat, home.lng], home.zoom);
                 },
                 "Initial View"
-            ).addTo(map);
+                ).addTo(map);
         }
     }, []);
-        
-        // setMapstate(map);
-
+                    
+                    // setMapstate(map);
+                    
     return(
         <div id="mapMainContainer" style={{ position: "relative" }}>
             <Container fluid>
-            <Row>
-                <Col xs={4} style={{ backgroundColor: "#404040" }}></Col>
-                <Col xs={4} style={{ backgroundColor: "#4d4d4d" }}></Col>
-                <Col xs={3} style={{ backgroundColor: "#404040" }}></Col>
-                <Col xs={1} style={{ backgroundColor: "#404040" }}></Col>
-            </Row>
+                <Row>
+                    <Col xs={4} style={{ backgroundColor: "#404040" }}></Col>
+                    <Col xs={4} style={{ backgroundColor: "#4d4d4d" }}></Col>
+                    <Col xs={3} style={{ backgroundColor: "#404040" }}></Col>
+                    <Col xs={1} style={{ backgroundColor: "#404040" }}></Col>
+                </Row>
             </Container>
             <div id="mapid" style={{ height: "100%" }}></div>
         </div>
