@@ -1,17 +1,29 @@
-import tweepy
+import requests
+import os 
+import sqlite3
 
-# consumer_key = 
-# consumer_secret = 
-# access_token = 
-# access_token_secret = 
 
-# auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-# auth.set_access_token(access_token, access_token_secret)
+# @hellenicpolice -> 119014566
+# @pyrosvestiki -> 158003436
+user_ids = {"hellenic_police":119014566, "pyrosvestiki": 158003436}
 
-auth = tweepy.Client()
+token = os.getenv('TOKEN')
 
-api = tweepy.API(auth)
+class BearerAuth(requests.auth.AuthBase):
+    def __init__(self, token):
+        self.token = token  # this is to get it from the Environment Variable called TOKEN
+    def __call__(self, r):
+        r.headers["authorization"] = "Bearer " + self.token
+        return r
 
-public_tweets = api.home_timeline()
-for tweet in public_tweets:
-    print(tweet.text)
+def get_tweets(user_id):
+    r = \
+        requests.get(
+            auth = BearerAuth(os.getenv('TOKEN')),
+            url = "https://api.twitter.com/2/users/{}/tweets".format(user_id),
+            auth = BearerAuth(token))
+    return r
+
+
+def save_tweets(r):
+    con = sqlite3.connect('tweets.db')
