@@ -1,84 +1,112 @@
-#body {
-    margin: 0;
+#body,
+#html {
+  margin: 0;
+  padding: 0;
 }
 #EventMappingNavBar {
-    border-bottom: 2px solid black;
-    background-size: cover;
-    background-color: #189fd4;
-    padding-block-end: 0;
-    padding-block-start: 0;
+  border-bottom: 2px solid rgb(251, 255, 0);
+  background-size: cover;
+  background-image: linear-gradient(90deg, #0e11db, rgb(206, 28, 28));
+  padding-block-end: 0;
+  padding-block-start: 0;
+}
+
+#EventMappingNavBar a,
+#EventMapping p {
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+#EventMappingNavBar a:hover {
+  text-decoration: underline;
+  font-size: 102%;
 }
 
 #NavBarContainer {
-    display: block;
-    position: relative;
-    left: 10px;
-    z-index: 1000;
-    height: 50px;
-    margin-top: 10px;
-    margin-right: 50px;
-}
-
-#homelink , #GitHub-Page a{
-    text-decoration: None;
-    color: Black;
-    font-style: italic;
-    font-family:Georgia, 'Times New Roman', Times, serif;
+  display: block;
+  position: relative;
+  left: 10px;
+  z-index: 1000;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  margin-left: 30px;
+  /* margin-right: 50px; */
+  /* height: 50px; */
 }
 
 #mainContainer {
-    display: flex;
-    flex-direction: column;
-    height: 95vh;
+  display: flex;
+  flex-direction: column;
+  height: 95vh;
 }
 
 #internalContainer {
-    flex-grow: 1;
-    padding: 0;
+  flex-grow: 1;
+  padding: 0;
 }
 
 #mapMainContainer {
-    margin: 0; 
-    padding: 0;
-    height: 100%;
-    display: flex;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  display: flex;
 }
 
 #mapid {
-    flex-grow: 1;
-    height: 100%;
+  flex-grow: 1;
+  height: 100%;
 }
-.leaflet-bar button {
-    background-color: white;
-    border: none;
-    border: 1px solid #ccc;
-    width: 30px;
-    height: 30px;
-    line-height: 30px;
-    display: block;
-    text-align: center;
-    text-decoration: none;
-    color: #4d4d4d;
-    font-size: 140%;
+.leaflet-bar button,
+.leaflet-control-layers-toggle,
+.leaflet-bar a {
+  background-color: #0e11db;
+  border: none;
+  border: 1px solid #ccc;
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  display: block;
+  text-align: center;
+  text-decoration: none;
+  color: #ffffff;
+  font-size: 140%;
 }
-.leaflet-bar button:hover {
-    background-color: rgba(255,255,255,0.9);
+
+.leaflet button {
+  background-color: rgb(206, 28, 28);
+}
+
+.leaflet-bar button:hover,
+.leaflet-bar a:hover {
+  background-color: rgb(206, 28, 28);
+  color: white;
+  font-size: 200%;
+}
+
+.leaflet-control-layers {
+  background-color: rgb(206, 28, 28);
+  color: white;
 }
 
 #footerContainer {
-    border-top: 2px solid black;
-    line-height: 100%;
-    height: 5vh;
-    position: relative;
-    background-color: #189fd4;
-    margin: 0;
-    direction: rtl;
-    padding-right: 2%;
+  display: flex;
+  flex-direction: column;
+  border-top: 2px solid rgb(251, 255, 0);
+  line-height: 100%;
+  min-height: 5vh;
+  position: relative;
+  background-image: linear-gradient(90deg, rgb(206, 28, 28), #0e11db);
+  margin: 0;
+  direction: rtl;
 }
 
-#footerContainer p {
-    margin-top: 5px;
-    font-style: italic;
-    margin-bottom: 0;
+#footerContainer p,
+#footerContainer a {
+  color: white;
+  margin-top: 10px;
+  padding-right: 1%;
+  /* margin-bottom: 0; */
+  /* margin: auto; */
+  font-style: italic;
 }
-
