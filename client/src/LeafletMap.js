@@ -1,14 +1,15 @@
-import "leaflet-easybutton";
+import {renderToString} from "react-dom/server";
+import { useHistory } from "react-router-dom";
 import React from "react";
-import { Col, Row, Container } from "react-bootstrap";
-import { useHistory, withRouter } from "react-router-dom";
-import "./App.css";
-import "leaflet-easybutton";
 import axios from "axios";
 import file from "./file.json";
 import blueIconpng from "./blueIcon.png";
 import redIconpng from "./redIcon.png";
+import "leaflet-easybutton";
+import "leaflet-easybutton";
+import "./App.css";
 
+// import { Col, Row, Container } from "react-bootstrap";
 // import JSON from "json";
 // import * as L from "leaflet/dist/leaflet";
 
@@ -91,7 +92,7 @@ let LeafletMap = (props) => {
     let map = new L.map("mapid", { zoomControl: false, cursor: true });
     map.setView([home.lat, home.lng], home.zoom, false);
 
-    OpenStreetMap.addTo(map);
+    TonerMap.addTo(map);
 
     const basemaps = {
       OpenStreetMap: OpenStreetMap,
@@ -101,65 +102,144 @@ let LeafletMap = (props) => {
       "Water Color Map": WaterColorMap,
       "Google Satellite": Google_Satellite,
     };
-    var blueIcon = L.icon({
-        iconUrl: blueIconpng,
-        shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
-        iconSize:[40, 40],
-        iconAnchor:  [0, 0],
-        shadowAnchor: [-8,0]
+    const blueIcon = L.icon({
+      iconUrl: blueIconpng,
+      shadowUrl:
+        "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
+      iconSize: [40, 40],
+      iconAnchor: [20, 40],
+      popupAnchor: [0, -34],
+      shadowAnchor: [13, 40],
     });
 
-    var redIcon = L.icon({
-        iconUrl: redIconpng,
-        shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
-        iconSize:[40, 40],
-        iconAnchor:  [0, 0],
-        shadowAnchor: [-8,0]
+    const redIcon = L.icon({
+      iconUrl: redIconpng,
+      shadowUrl:
+        "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
+      iconSize: [40, 40],
+      iconAnchor: [20, 40],
+      popupAnchor: [0, -34],
+      shadowAnchor: [13, 40],
     });
 
-    // let a = L.geoJSON(file, {
-    //     pointToLayer: function(feature, latlng) {
-    //         return blueIcon(latlng);
+    // TEST
+    // let testmarker = L.marker([38.2, 23.23])
+    // .bindPopup(
+    //   // `<blockquote class="twitter-tweet" data-theme="dark"><p lang="el" dir="ltr">❗Περισσότερα από 67 κιλά κάνναβης κατασχέθηκαν από αστυνομικούς της Διεύθυνσης Αστυνομίας Ορεστιάδας σε παρέβρια περιοχή του Έβρου.<br>👉<a href="https://t.co/K4MkPuiAVI">https://t.co/K4MkPuiAVI</a> <a href="https://t.co/zVLMGR2VCC">pic.twitter.com/zVLMGR2VCC</a></p>&mdash; Ελληνική Αστυνομία (@hellenicpolice) <a href="https://twitter.com/hellenicpolice/status/1494387434112655362?ref_src=twsrc%5Etfw">February 17, 2022</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script> `
+    //   `<blockquote class="twitter-tweet"><p lang="el" dir="ltr"><a href="https://twitter.com/hellenicpolice/status/1494387434112655362?ref_src=twsrc%5Etfw">February 17, 2022</a></blockquote>`
+    // )
+    // .addTo(map);
+
+    // console.log(file);
+    // var layer1 = L.geoJson(file, {
+    //       pointToLayer: function (feature, latlng) {
+    //         return L.marker(latlng, {icon: redIcon});
+    //       } ,
+    //       onEachFeature: function (feature, layer, latlng) {
+    //         layer.bindPopup(
+    //           renderToString(
+    //             <div>
+    //               <h1>Tweet</h1>
+    //               {/* <a href={"https://twitter.com/pyrosvestiki/status/"+ feature.properties.id}>Tweet</a> */}
+    //               <h3><strong>Id</strong> = {feature.properties.id}</h3>
+    //               <h3><strong>Created At</strong> = {Date(feature.properties.created_at).split(' ').slice(0,5).join(' ')}</h3>
+    //               <h3><strong>Location</strong> = [{feature.geometry.coordinates[0]},{feature.geometry.coordinates[1]}]</h3>
+    //               <h3><strong>Text</strong></h3>
+    //               <h3>{feature.properties.text}</h3>
+    //            </div>
+    //           )
+    //         );
     //     }
-    // }        
-    // );
-    // a.addTo(map);
+    // }).addTo(map);
+    // layer1.setStyle({redIcon});
 
-    L.geoJson(file, {
+    axios.get("/GetLayer_Police").then(function (response) {
+      console.log(response.data);
+      police_tweets = L.geoJson(file, {
         pointToLayer: function (feature, latlng) {
-            return L.marker(latlng, {icon: redIcon});
-        }}, { 
-        onEachFeature: function (feature, layer) {
-        layer.bindPopup(feature.properties.text);
-        }
-    }).addTo(map);
+          return L.marker(latlng, { icon: blueIcon });
+        },
+        onEachFeature: function (feature, layer, latlng) {
+          layer.bindPopup(
+            renderToString(
+              <div>
+                <h2>Hellenic Police Tweet</h2>
+                {/* <h1><a href="https://twitter.com/pyrosvestiki/status/{feature.properties.id}" Tweet></a></h1> */}
+                <h3>
+                  <strong>Id</strong> = {feature.properties.id}
+                </h3>
+                <h3>
+                  <strong>Created At</strong> ={" "}
+                  {Date(feature.properties.created_at)
+                    .split(" ")
+                    .slice(0, 5)
+                    .join(" ")}
+                </h3>
+                <h3>
+                  <strong>Location</strong> = [{feature.geometry.coordinates[0]}
+                  ,{feature.geometry.coordinates[1]}]
+                </h3>
+                <h4>
+                  <strong>Text</strong>
+                </h4>
+                <h3>{feature.properties.text}</h3>
+              </div>
+            )
+          );
+        },
+      });
 
-    // axios.get("/GetLayer_Police").then(function (response) {
-    //     console.log(response.data);
-    //     police_tweets = L.geoJSON(response.data,{
-    //         style: {fillColor: "#1111d8"}
-    //     });
+      axios.get("/GetLayer_Pyrosvestiki").then(function (response) {
+        // console.log(response.data);
+        pyrosvestiki_tweets = L.geoJson(file, {
+          pointToLayer: function (feature, latlng) {
+            return L.marker(latlng, { icon: redIcon });
+          },
+          onEachFeature: function (feature, layer, latlng) {
+            layer.bindPopup(
+              renderToString(
+                <div>
+                  <h1>Hellenic Fire Department Tweet</h1>
+                  {/* <h1><a href="https://twitter.com/pyrosvestiki/status/{feature.properties.id}" Tweet></a></h1> */}
+                  <h3>
+                    <strong>Id</strong> = {feature.properties.id}
+                  </h3>
+                  <h3>
+                    <strong>Created At</strong> ={" "}
+                    {Date(feature.properties.created_at)
+                      .split(" ")
+                      .slice(0, 5)
+                      .join(" ")}
+                  </h3>
+                  <h3>
+                    <strong>Location</strong> = [
+                    {feature.geometry.coordinates[0]},
+                    {feature.geometry.coordinates[1]}]
+                  </h3>
+                  <h3>
+                    <strong>Text</strong>
+                  </h3>
+                  <h3>{feature.properties.text}</h3>
+                </div>
+              )
+            )
+          }
+        });
 
-    //     police_tweets.addTo(map);
+        pyrosvestiki_tweets.addTo(map);
 
-    //     axios.get("/GetLayer_Pyrosvestiki").then(function (response) {
-    //         console.log(response.data);
-    //         pyrosvestiki_tweets = L.geoJSON(response.data, {
-    //             style: {fillColor: "#ca1c20"}
-    //         });
+        const overlaymaps = {
+          "Tweets: Hellenic Fire Department": pyrosvestiki_tweets,
+          // "Tweets: Hellenic Police": police_tweets,
+        };
+        L.control.layers(basemaps, overlaymaps).addTo(map);
+      });
 
-    //         pyrosvestiki_tweets.addTo(map);
-    //         const overlaymaps = {
-    //             "Tweets: Hellenic Fire Department": pyrosvestiki_tweets,
-    //             "Tweets: Hellenic Police": police_tweets
-    //         };
-    //         L.control.layers(basemaps,overlaymaps).addTo(map);
-    //     });
-    // });
+    });
 
     L.control.zoom({ position: "topleft" }).addTo(map);
 
-    // map.setMaxBounds(map.getBounds());
+    map.setMaxBounds(map.getBounds());
 
     L.easyButton(
       "fa-home",
@@ -191,11 +271,6 @@ let LeafletMap = (props) => {
         this._latlng.style.marginTop = "-2.5%";
       },
     });
-    let marker = L.marker([38.2, 23.23])
-      .bindPopup(
-        `<blockquote class="twitter-tweet" data-theme="dark"><p lang="el" dir="ltr">❗Περισσότερα από 67 κιλά κάνναβης κατασχέθηκαν από αστυνομικούς της Διεύθυνσης Αστυνομίας Ορεστιάδας σε παρέβρια περιοχή του Έβρου.<br>👉<a href="https://t.co/K4MkPuiAVI">https://t.co/K4MkPuiAVI</a> <a href="https://t.co/zVLMGR2VCC">pic.twitter.com/zVLMGR2VCC</a></p>&mdash; Ελληνική Αστυνομία (@hellenicpolice) <a href="https://twitter.com/hellenicpolice/status/1494387434112655362?ref_src=twsrc%5Etfw">February 17, 2022</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script> `
-      )
-      .addTo(map);
 
     let position = new Position();
     map.addControl(position);
