@@ -6,6 +6,7 @@ from models import pyrosvestiki_tweets, police_tweets
 import json
 
 engine = create_engine("postgresql://testuser:testpassword@localhost/eventmapping")
+# engine = create_engine("postgresql://testuser:testpass@192.168.1.252/eventmapping")
 meta = MetaData()
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
@@ -23,21 +24,23 @@ def GetLayer_Pyrosvestiki():
     query = session.query(functions.ST_AsGeoJSON(pyrosvestiki_tweets)).all()
     geojson = ""
     for tweet in query:
-        geojson += str(tweet)[2:-3] + ","
+        geojson += tweet[0] + ','
+        # geojson += (tweet2)[2:-3] + ","
     geojson = (
         '{"type": "FeatureCollection","features": ['
         + geojson[:-1]
         + '], "crs":{"type":"name","properties":{"name":"urn:ogc:def:crs:EPSG::4326"}}}'
     )
+    # print(geojson)
     return geojson
 
 @app.route("/GetLayer_Police")
 def GetLayer_Police():
-    query = session.query(functions.ST_AsGeoJSON(police_tweets)).limit(1)
+    query = session.query(functions.ST_AsGeoJSON(police_tweets)).all() #limit(1)
     geojson = ""
     for tweet in query:
-        geojson += str(tweet)[2:-3] + ","
-
+        # geojson += str(tweet)[2:-3] + ","
+        geojson += tweet[0] + ','
     geojson = (
         '{"type": "FeatureCollection","features": ['
         + geojson[:-1]

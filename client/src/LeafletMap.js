@@ -155,7 +155,7 @@ let LeafletMap = (props) => {
 
     axios.get("/GetLayer_Police").then(function (response) {
       console.log(response.data);
-      police_tweets = L.geoJson(file, {
+      police_tweets = L.geoJson(response.data, {
         pointToLayer: function (feature, latlng) {
           return L.marker(latlng, { icon: blueIcon });
         },
@@ -179,26 +179,26 @@ let LeafletMap = (props) => {
                   <strong>Location</strong> = [{feature.geometry.coordinates[0]}
                   ,{feature.geometry.coordinates[1]}]
                 </h3>
-                <h4>
+                <h3>
                   <strong>Text</strong>
-                </h4>
+                </h3>
                 <h3>{feature.properties.text}</h3>
               </div>
             )
           );
         },
-      });
-
-      axios.get("/GetLayer_Pyrosvestiki").then(function (response) {
-        // console.log(response.data);
-        pyrosvestiki_tweets = L.geoJson(file, {
-          pointToLayer: function (feature, latlng) {
-            return L.marker(latlng, { icon: redIcon });
-          },
-          onEachFeature: function (feature, layer, latlng) {
-            layer.bindPopup(
-              renderToString(
-                <div>
+      })
+        police_tweets.addTo(map);
+        axios.get("/GetLayer_Pyrosvestiki").then(function (response) {
+          // console.log(response.data);
+          pyrosvestiki_tweets = L.geoJson(response.data, {
+            pointToLayer: function (feature, latlng) {
+              return L.marker(latlng, { icon: redIcon });
+            },
+            onEachFeature: function (feature, layer, latlng) {
+              layer.bindPopup(
+                renderToString(
+                  <div>
                   <h1>Hellenic Fire Department Tweet</h1>
                   {/* <h1><a href="https://twitter.com/pyrosvestiki/status/{feature.properties.id}" Tweet></a></h1> */}
                   <h3>
@@ -222,21 +222,20 @@ let LeafletMap = (props) => {
                   <h3>{feature.properties.text}</h3>
                 </div>
               )
-            )
-          }
+              )
+            }
         });
-
         pyrosvestiki_tweets.addTo(map);
-
+        
         const overlaymaps = {
           "Tweets: Hellenic Fire Department": pyrosvestiki_tweets,
-          // "Tweets: Hellenic Police": police_tweets,
+          "Tweets: Hellenic Police": police_tweets,
         };
         L.control.layers(basemaps, overlaymaps).addTo(map);
       });
-
+      
     });
-
+    
     L.control.zoom({ position: "topleft" }).addTo(map);
 
     map.setMaxBounds(map.getBounds());

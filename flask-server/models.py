@@ -15,6 +15,7 @@ from datetime import datetime
 from shapely import wkb, wkt
 
 engine = create_engine("postgresql://testuser:testpassword@localhost/eventmapping")
+# engine = create_engine("postgresql://testuser:testpass@192.168.1.252/eventmapping")
 meta = MetaData()
 
 Base = declarative_base()
