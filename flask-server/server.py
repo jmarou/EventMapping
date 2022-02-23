@@ -21,7 +21,8 @@ def homepage():
 
 @app.route("/GetLayer_Pyrosvestiki")
 def GetLayer_Pyrosvestiki():
-    query = session.query(functions.ST_AsGeoJSON(pyrosvestiki_tweets)).all()
+    query = session.query(functions.ST_AsGeoJSON(pyrosvestiki_tweets))\
+        .where(pyrosvestiki_tweets.location != None)
     geojson = ""
     for tweet in query:
         geojson += tweet[0] + ','
@@ -36,7 +37,8 @@ def GetLayer_Pyrosvestiki():
 
 @app.route("/GetLayer_Police")
 def GetLayer_Police():
-    query = session.query(functions.ST_AsGeoJSON(police_tweets)).all() #limit(1)
+    query = session.query(functions.ST_AsGeoJSON(police_tweets))\
+        .where(police_tweets.location != None)
     geojson = ""
     for tweet in query:
         # geojson += str(tweet)[2:-3] + ","

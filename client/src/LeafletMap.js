@@ -165,26 +165,23 @@ let LeafletMap = (props) => {
               <div>
                 <h2>Hellenic Police Tweet</h2>
                 {/* <h1><a href="https://twitter.com/pyrosvestiki/status/{feature.properties.id}" Tweet></a></h1> */}
-                <h3>
+                <p>
                   <strong>Id</strong> = {feature.properties.id}
-                </h3>
-                <h3>
+                  <hr />
                   <strong>Created At</strong> ={" "}
                   {Date(feature.properties.created_at)
                     .split(" ")
                     .slice(0, 5)
                     .join(" ")}
-                </h3>
-                <h3>
+                  <hr />
                   <strong>Location</strong> = [{feature.geometry.coordinates[0]}
                   ,{feature.geometry.coordinates[1]}]
-                </h3>
-                <h3>
+                  <hr />
                   <strong>Text</strong>
-                </h3>
-                <h3>{feature.properties.text}</h3>
+                </p>
               </div>
-            )
+            ) + 
+            feature.properties.text
           );
         },
       })
@@ -195,33 +192,34 @@ let LeafletMap = (props) => {
             pointToLayer: function (feature, latlng) {
               return L.marker(latlng, { icon: redIcon });
             },
-            onEachFeature: function (feature, layer, latlng) {
+            onEachFeature: function (feature, layer) {
               layer.bindPopup(
                 renderToString(
                   <div>
                   <h1>Hellenic Fire Department Tweet</h1>
-                  {/* <h1><a href="https://twitter.com/pyrosvestiki/status/{feature.properties.id}" Tweet></a></h1> */}
-                  <h3>
-                    <strong>Id</strong> = {feature.properties.id}
-                  </h3>
-                  <h3>
+                  <p>
+                    <strong>Id</strong> = {feature.properties.id}<hr />
+                  {/* </p>
+                  <p> */}
                     <strong>Created At</strong> ={" "}
                     {Date(feature.properties.created_at)
                       .split(" ")
                       .slice(0, 5)
                       .join(" ")}
-                  </h3>
-                  <h3>
+                  {/* </p>
+                  <p> */}
+                    <hr />
                     <strong>Location</strong> = [
                     {feature.geometry.coordinates[0]},
                     {feature.geometry.coordinates[1]}]
-                  </h3>
-                  <h3>
+                  {/* </p>
+                  <p> */}
+                     <hr />
                     <strong>Text</strong>
-                  </h3>
-                  <h3>{feature.properties.text}</h3>
+                  </p>
                 </div>
-              )
+              ) +
+              feature.properties.text
               )
             }
         });

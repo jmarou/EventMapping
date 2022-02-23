@@ -1,11 +1,12 @@
-from sqlalchemy import create_engine, MetaData, insert
-from sqlalchemy.orm import sessionmaker
 from flask import Flask
+from random import random
 from models import police_tweets, pyrosvestiki_tweets
+from sqlalchemy import create_engine, MetaData
+from sqlalchemy.orm import sessionmaker
+import geocoder
 import requests
 import datetime
 import os
-from random import random
 
 # connection to Postgresql + PostGIS Database
 engine = create_engine("postgresql://testuser:testpassword@localhost/eventmapping")
@@ -33,47 +34,68 @@ class BearerAuth(requests.auth.AuthBase):
         r.headers["authorization"] = "Bearer " + self.token
         return r
 
-def get_all_tweets(user_id, parameters):
+def format_text(text):
+    '''
+    format_text(text)
+    Parameters: 
+    text (String): Plain text
+    Return:
+    formatted_text (String): HTML text (including hashtags and links)
+    '''
+    text_list = text.split(' ')
 
-    r = get_tweets(USER_IDS[user_id], parameters)
+    for idx, word in enumerate(text_list):
+        if word.startswith("http"):
+            text_list[idx] = '<a href="{}">{}</a>'.format(word,word) 
+        elif word.startswith("#"):
+            text_list[idx] = '<a href="https://twitter.com/hashtag/{}">{}</a>'.format(word[1:], word)
+        else:
+            pass
+    formatted_text =  " ".join(text_list)
 
-    if int(r["data"][0]["author_id"]) == USER_IDS["hellenic_police"]:
-        flag = 1
-    else:
-        flag = 0
+    return formatted_text
 
-    while r["meta"]["next_token"]:
-        for idx, tweet in enumerate(r["data"]):
-            # author_id = tweet['author_id']
-            id = tweet["id"]
-            text = tweet["text"]
-            created_at = datetime.datetime.strptime(
-                tweet["created_at"], "%Y-%m-%dT%H:%M:%S.%f%z"
-            )
+def get_location(text):
+    capital_words = ''
+    for word in text.split()[1:]:           
+        unicode = ord(word[0])
+        if unicode >= 913 and unicode <= 937:
+            capital_words = word + ','
 
-            if flag:
-                new_tweet = police_tweets(
-                    id=id,
-                    text=text,
-                    created_at=created_at,
-                    location=f"SRID=4326;POINT({random()*4+23} {random()*4+37})",
-                )
-            else:
-                new_tweet = pyrosvestiki_tweets(
-                    id=id,
-                    text=text,
-                    created_at=created_at,
-                    location=f"SRID=4326;POINT({random()*4+23} {random()*4+37})",
-                )
+    geo = geocoder.osm(capital_words)
+    # Suppose all tweets concern places in Greece!
+    if geo.country_code == 'gr':
+        # add a slight randomness to the location to avoid two markers on leaflet to overlap 100%
+        location = f"SRID=4326;POINT({geo.lng} {geo.lat+random()/1000})"
+    else: 
+        location = None
 
-            session.add(new_tweet)
-            session.commit()
+    return location
 
-            parameters["pagination_token"] = r["meta"]["next_token"]
-            r = get_tweets(USER_IDS[user_id], parameters)
+def get_all_tweets(account):
+    '''
+    get_all_tweets(user_id)
+    Parameters:
+    user_id (String) : 
+
+    '''
+    parameters = {
+        "max_results": "100",
+        "expansions": ["author_id"],
+        "tweet.fields": "created_at",
+    }
+
+    r_json = get_tweets(account, parameters)
+
+    while "next_token" in r_json["meta"]:
+        save_tweets(r_json)
+        parameters["pagination_token"] = r_json["meta"]["next_token"]
+        r_json = get_tweets(account, parameters)
+
     return 0
 
-def get_tweets(user_id, parameters):
+def get_tweets(account, parameters):
+    user_id = USER_IDS[account]
     r = requests.get(
         auth=BearerAuth(TWITTER_TOKEN),
         url="https://api.twitter.com/2/users/{}/tweets".format(user_id),
@@ -83,33 +105,41 @@ def get_tweets(user_id, parameters):
     print(f"Fetched {len(r.json()['data'])} new tweets")
     return r.json()
 
-def save_tweets(r):
-    """
-    Function to save the tweets in the Database.
-    r: response type
-    """
-    for idx, tweet in enumerate(r["data"]):
-        # author_id = tweet['author_id']
+def save_tweets(r_json):
+    author_id = r_json["data"][0]['author_id']
+    if author_id == USER_IDS["hellenic_police"]:
+        flag = 1 
+    else: 
+        flag = 0
+
+    for tweet in r_json["data"]:
+        # the id of the tweet 
         id = tweet["id"]
-        text = tweet["text"]
+
+        # the datetime for the timestamp of the tweet creation (ISO with timezone)
         created_at = datetime.datetime.strptime(
             tweet["created_at"], "%Y-%m-%dT%H:%M:%S.%f%z"
         )
-        if new_tweet.__tablename__ == "hellenic_police":
-            # new_tweet = police_tweets(id=id, text=text, created_at=created_at)
+        # the content of the tweet. The processing incorporates links for the HTML content 
+        text = format_text(tweet["text"])
+
+        # get the location via geocoding analysis
+        location = get_location(tweet["text"])
+
+        if flag:
             new_tweet = police_tweets(
                 id=id,
                 text=text,
                 created_at=created_at,
-                location=f"SRID=4326;POINT({random()*4+23} {random()*4+37})",
+                location=location
             )
         else:
-            # new_tweet = pyrosvestiki_tweets(id=id, text=text, created_at=created_at)
             new_tweet = pyrosvestiki_tweets(
                 id=id,
                 text=text,
                 created_at=created_at,
-                location=f"SRID=4326;POINT({random()*4+23} {random()*4+37})",
+                location=location
+                # location=f"SRID=4326;POINT({random()*4+23} {random()*4+37})"
             )
         try:
             session.add(new_tweet)
@@ -122,22 +152,22 @@ def save_tweets(r):
 def update_location(tweets):
     for row in session.query(tweets):
         # put random locations
-        row.location = f"SRID=4326;POINT({random()*4+23} {random()*4+37})"
+        row.location = f"SRID=4326;POINT({random()*7+21} {random()*7+39})"
     session.commit()
     return None
 
 if __name__ == "__main__":
     # make get request to get the tweets from twitter API
     # newest_id = session.query(pyrosvestiki_tweets.id).order_by(pyrosvestiki_tweets.id.desc()).first()
-    # print(newest_id)
-    # parameters = {"max_results":"100","since_id": newest_id, "expansions":["geo.place_id,author_id"], "tweet.fields":"created_at"}
-    # r = get_tweets(USER_IDS["pyrosvestiki"], parameters)
+    # parameters = {"max_results":"10","since_id": newest_id, "expansions":["geo.place_id,author_id"], "tweet.fields":"created_at"}
 
     # parameters = {
     #     "max_results": "100",
     #     "expansions": ["geo.place_id,author_id"],
     #     "tweet.fields": "created_at",
     # }
-    # get_all_tweets("hellenic_police", parameters)
-    update_location(police_tweets)
-    
+
+    # r_json = get_tweets("pyrosvestiki", parameters)
+    # save_tweets(r_json)
+
+    get_all_tweets("pyrosvestiki")
