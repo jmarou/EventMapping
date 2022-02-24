@@ -1,21 +1,9 @@
-# EventMapping
-The goal of this project is to map the events uploaded in the twitter accounts of @hellenicpolice and @pyrosvestiki in an online WFS layer.
+![Eventmapping-github](https://user-images.githubusercontent.com/26281506/155498608-8f71868e-bbfb-4759-afc5-c3353a1ac249.png)
 
-The front end is developed using ReactJS and LeafletJS.
-The backend is developed using Python and flask.
+EventMapping is an open-source project developed in the context of the course _Modern Web Applications_ of <a href="https://www.ece.ntua.gr/en/postgraduate/2">MBA: Engineering - Economics Systems</a> hosted by <a href="https://www.ntua.gr/en/">NTUA</a> & <a href="https://www.unipi.gr/unipi/en/">UNIPI</a>.
 
-In order to run the application:
-First build the front end:
-Inside the client folder run the following commands:
-- npm install
-- npm run build 
+The project focuses on parsing tweets from the twitter accounts of <a href="https://twitter.com/hellenicpolice">#Hellenic_police</a> and <a href="https://twitter.com/pyrosvestiki">#Pyrosvestiki</a> and display them on a WebGIS map.
 
-In order to be able to make API calls to the twitter API you must have a bearer token saved in the environment with name 'TOKEN'.
-
-Inside the flask-server folder run the following commands:
-- pip install -r requirements.txt
-- python3 server.py
+![Screenshot 2022-02-24 082814](https://user-images.githubusercontent.com/26281506/155503492-aa005e76-0bb0-43b9-8a49-4397fb3177f8.png)
 
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
