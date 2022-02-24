@@ -13,4 +13,4 @@ Please see the <a href="https://github.com/jmarou/EventMapping/wiki">🕮 wiki</
 ![HTML5](https://img.shields.io/badge/html5-%23323330.svg?style=flat&logo=HTML5&logoColor=23E34F26) ![CSS3](https://img.shields.io/badge/CSS3-%23323330.svg?style=flat&logo=css3&logoColor=%231572B6) ![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=flat&logo=Javascript&logoColor=%23F7DF1E) ![Leaflet](https://img.shields.io/badge/Leaflet.js-%23323330.svg?style=flat&logo=leaflet&logoColor=199900) ![React](https://img.shields.io/badge/React.js-%23323330.svg?style=flat&logo=react&logoColor=23E34F26) 
 
 ## 🌟 Preview 
-![Screenshot 2022-02-24 082814](https://user-images.githubusercontent.com/26281506/155503492-aa005e76-0bb0-43b9-8a49-4397fb3177f8.png)
+![Screenshot 2022-02-24 223547](https://user-images.githubusercontent.com/26281506/155604466-86d1f406-26d9-43a0-9822-5e9c45289aa0.png)
