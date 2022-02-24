@@ -1,13 +1,12 @@
+import { Route, Link, useHistory } from "react-router-dom";
+import { Navbar, Nav, Container } from "react-bootstrap";
+import { faFire, faLandmark } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faGithub } from "@fortawesome/fontawesome-free-brands";
+import LeafletMap from "./LeafletMap.js";
+import React from "react";
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { Navbar, Nav, Container } from "react-bootstrap";
-import React from "react";
-import { Route, Link, useHistory, Switch } from "react-router-dom";
-import LeafletMap from "./LeafletMap.js";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFire, faLandmark } from "@fortawesome/free-solid-svg-icons";
-import { faGithub } from "@fortawesome/fontawesome-free-brands";
-// import axios from "axios";
 
 function App(props) {
   let history = useHistory();
@@ -25,6 +24,10 @@ function App(props) {
             />
             <Navbar.Collapse id="basic-navbar-nav">
               <Nav className="me-auto">
+                <span 
+                id="navbar-logo">
+                <img src={require('./logo.png')} style={{width:150}} />
+                </span>
                 <Nav.Link
                   className="my-auto"
                   onClick={() =>
@@ -82,13 +85,12 @@ function App(props) {
 
       <div id="footerContainer">
         <p>
-          EventMapping was developed during in the context of course "Network
-          Applications" of{" "}
+        EventMapping is an open-source project developed in the context of the course Modern Web Applications {  }
           <a
             href="http://mycourses.ntua.gr/course_description/index.php?cidReq=PSTGR1083"
             target="_blank"
           >
-            M.Sc. Technoeconomics of NTUA
+            MBA: Engineering - Economics Systems hosted by NTUA & UNIPI
           </a>
         </p>
       </div>

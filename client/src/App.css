@@ -35,11 +35,24 @@
   /* height: 50px; */
 }
 
+#navbar-logo {
+  margin-right: 30px;
+}
+
+#basic-navbar-nav {
+  display: inline;
+}
+
 #mainContainer {
   display: flex;
   flex-direction: column;
   height: 95vh;
 }
+
+#navbar-logo { 
+  display: content;
+}
+
 
 #internalContainer {
   flex-grow: 1;
