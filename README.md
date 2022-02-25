@@ -44,7 +44,9 @@ We recommend using a virtual python environment such as [venv](https://docs.pyth
 4. Create a database called eventmapping, a role (testuser) and a password (testpassword)
 5. Download and install the PostGIS extension (see [here](https://postgis.net/install/))
 6. Inside the eventmapping DB run the following command: `CREATE EXTENSION postgis;`
-7. Run the following command to initialize the DB with a sample of data: `pg_dump -h localhost -d eventmapping -U testuser < path/to/eventmapping_dump.sql `
+7. Run the following command to initialize the DB with a sample of data:
+
+`pg_dump -h localhost -d eventmapping -U testuser < path/to/eventmapping_dump.sql `
 
 ## 4. Create and populate DB tables 
 1. `python3 models.py`
