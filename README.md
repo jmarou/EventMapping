@@ -15,6 +15,9 @@ Please see the <a href="https://github.com/jmarou/EventMapping/wiki">🕮 wiki</
 ## 🌟 Preview 
 ![Screenshot 2022-02-24 223547](https://user-images.githubusercontent.com/26281506/155604466-86d1f406-26d9-43a0-9822-5e9c45289aa0.png)
 
+## Get Started
+
+
 ## 1. Twitter API
 In order to be able to make API calls to the twitter API you must have a bearer token. 
 
