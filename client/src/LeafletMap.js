@@ -1,17 +1,12 @@
 import {renderToString} from "react-dom/server";
 import { useHistory } from "react-router-dom";
-import React from "react";
-import axios from "axios";
-import file from "./file.json";
 import blueIconpng from "./blueIcon.png";
 import redIconpng from "./redIcon.png";
+import React from "react";
+import axios from "axios";
 import "leaflet-easybutton";
 import "leaflet-easybutton";
 import "./App.css";
-
-// import { Col, Row, Container } from "react-bootstrap";
-// import JSON from "json";
-// import * as L from "leaflet/dist/leaflet";
 
 let police_tweets;
 let pyrosvestiki_tweets;
@@ -92,7 +87,7 @@ let LeafletMap = (props) => {
     let map = new L.map("mapid", { zoomControl: false, cursor: true });
     map.setView([home.lat, home.lng], home.zoom, false);
 
-    TonerMap.addTo(map);
+    HumanitarianMap.addTo(map);
 
     const basemaps = {
       OpenStreetMap: OpenStreetMap,
@@ -236,7 +231,7 @@ let LeafletMap = (props) => {
     
     L.control.zoom({ position: "topleft" }).addTo(map);
 
-    map.setMaxBounds(map.getBounds());
+    // map.setMaxBounds(map.getBounds());
 
     L.easyButton(
       "fa-home",
