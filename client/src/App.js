@@ -1,12 +1,14 @@
+import React from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
 import { Route, Link, useHistory } from "react-router-dom";
 import { Navbar, Nav, Container } from "react-bootstrap";
-import { faFire, faLandmark } from "@fortawesome/free-solid-svg-icons";
+
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGithub } from "@fortawesome/fontawesome-free-brands";
-import LeafletMap from "./LeafletMap.js";
-import React from "react";
+import { faFire, faLandmark } from "@fortawesome/free-solid-svg-icons";
+
 import "./App.css";
-import "bootstrap/dist/css/bootstrap.min.css";
+import LeafletMap from "./LeafletMap.js";
 
 function App(props) {
   let history = useHistory();
@@ -17,17 +19,16 @@ function App(props) {
     <React.Fragment>
       <div id="mainContainer">
         <Navbar variant="dark" expand="sm" id="EventMappingNavBar">
-          <Container id="navbarContainer">
+          <span id="navbar-logo">
+            <img src={require("./Icons/logo.png")} style={{ width: 150 }} />
+          </span>
+          <span id="navbarContainer">
             <Navbar.Toggle
               aria-controls="basic-navbar-nav"
-              style={{ backgroundColor: "DarkRed", color: "White" }}
+              style={{ backgroundColor: "DarkRed", color: "white" }}
             />
             <Navbar.Collapse id="basic-navbar-nav">
               <Nav className="me-auto">
-                <span 
-                id="navbar-logo">
-                <img src={require('./logo.png')} style={{width:150}} />
-                </span>
                 <Nav.Link
                   className="my-auto"
                   onClick={() =>
@@ -75,7 +76,7 @@ function App(props) {
                 </Nav.Link>
               </Nav>
             </Navbar.Collapse>
-          </Container>
+          </span>
         </Navbar>
 
         <Container fluid id="internalContainer">
@@ -85,7 +86,8 @@ function App(props) {
 
       <div id="footerContainer">
         <p>
-        EventMapping is an open-source project developed in the context of the course Modern Web Applications {  }
+          EventMapping is an open-source project developed in the context of the
+          course Modern Web Applications {}
           <a
             href="http://mycourses.ntua.gr/course_description/index.php?cidReq=PSTGR1083"
             target="_blank"

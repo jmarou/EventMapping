@@ -1,3 +1,5 @@
+from geoalchemy2 import Geometry, functions
+from shapely import wkb
 from sqlalchemy import (
     create_engine,
     MetaData,
@@ -8,22 +10,14 @@ from sqlalchemy import (
     DateTime,
     BIGINT,
 )
-from sqlalchemy.orm import declarative_base
-from geoalchemy2 import Geometry, functions
-from shapely import wkb
 
-engine = create_engine("postgresql://testuser:testpassword@localhost/eventmapping")
-meta = MetaData()
-Base = declarative_base()
+from db.database import Base, engine
 
 # @hellenicpolice -> 119014566 ||  @pyrosvestiki -> 158003436
 USER_IDS = {"hellenic_police": 119014566, "pyrosvestiki": 158003436}
 
 
 class pyrosvestiki_tweets(Base):
-    '''
-    
-    '''
     __tablename__ = "pyrosvestiki_tweets"
 
     id = Column("id", BIGINT, primary_key=True)
@@ -92,12 +86,10 @@ class police_tweets(Base):
 
 
 def create_DB_tables():
-    """
-    Run this function to create the tables in postgresql.
-    """
+    """Run this function to create the tables in postgresql."""
+
     Base.metadata.create_all(engine)
 
 
 if __name__ == "__main__":
     create_DB_tables()
-

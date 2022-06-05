@@ -1,31 +1,30 @@
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine, MetaData
-from models import police_tweets, pyrosvestiki_tweets
-from random import random
-import geocoder
-import requests
 import datetime
 import os
+import random
+import requests
 
-# connection to Postgresql + PostGIS Database
-engine = create_engine("postgresql://testuser:testpassword@localhost/eventmapping")
-meta = MetaData()
+import geocoder
 
-# create session for interaction with DB
-DBSession = sessionmaker(bind=engine)
-session = DBSession()
+from db.models import police_tweets, pyrosvestiki_tweets
+from db.database import db_session
+
 
 # @hellenicpolice -> 119014566 ||  @pyrosvestiki -> 158003436
-USER_IDS = {"hellenic_police": 119014566, "pyrosvestiki": 158003436}
+USER_IDS = {
+    "hellenic_police": 119014566, 
+    "pyrosvestiki": 158003436
+}
+    
+# token for twitter API
+TWITTER_TOKEN = os.getenv("TOKEN")
 
-TWITTER_TOKEN = os.getenv("TOKEN") # token for twitter API
 
 class BearerAuth(requests.auth.AuthBase):
-    '''
-    Authentication for the twitter API with Bearer Token
-    '''
+    """Authentication for the twitter API with Bearer Token."""
+
     def __init__(self, token):
-        self.token = TWITTER_TOKEN  # my TWITTER API TOKEN IS SAVED IN OS ENVIRONMENT
+        # my TWITTER API TOKEN IS SAVED IN OS ENVIRONMENT
+        self.token = TWITTER_TOKEN
 
     def __call__(self, r):
         r.headers["authorization"] = "Bearer " + self.token
@@ -33,19 +32,19 @@ class BearerAuth(requests.auth.AuthBase):
 
 
 def format_text(text):
-    '''
-    format_text(text)
-    Gets the tweet's plain text and returns a rich text, including http links and twitter hashtags 
-    
+    """Gets the tweet's plain text and returns a rich text, including http links and twitter hashtags.
+
     Parameters
     ----------
-    text(String): the input text.
-   
+    text : str
+        The input text.
+
     Returns
     ----------
-    formatted_text(String): the rich text.
-    ----------
-    '''
+    formatted_text : str
+        The rich text.
+    """
+
     text_list = text.split(" ")
 
     for idx, word in enumerate(text_list):
@@ -63,19 +62,19 @@ def format_text(text):
 
 
 def get_location(text):
-    '''
-    get_location(text)
-    Gets the tweet's plain text and returns the location as WKT (POINT(lng lat)) 
-    
+    """Gets the tweet's plain text and returns the location as WKT (POINT(lng lat)).
+
     Parameters
     ----------
-    text(String): the input text.
-   
+    text : str
+        The input text.
+
     Returns
     ----------
-    location(String): the geolocation as WKT (Well known text).
-    ----------
-    '''
+    location : str
+        The geolocation as WKT (Well known text).
+    """
+
     capital_words = ""
     for word in text.split()[1:]:
         unicode = ord(word[0])
@@ -86,7 +85,7 @@ def get_location(text):
     # Suppose all tweets concern places in Greece!
     if geo.country_code == "gr":
         # add a slight randomness to the location to avoid two markers on leaflet to overlap 100%
-        location = f"SRID=4326;POINT({geo.lng} {geo.lat+random()/1000})"
+        location = f"SRID=4326;POINT({geo.lng} {geo.lat + random.random()/1000})"
     else:
         location = None
 
@@ -94,19 +93,21 @@ def get_location(text):
 
 
 def get_tweets(account, parameters):
-    '''
-    get_tweets(account, parameters)
+    """
     Gets the account name of the twitter user and a set of parameters and returns the last tweets
     from their timeline.
 
     Parameters
     ----------
-    account(String): the account name. 
+    account : str
+        The account name.
+
     Returns
     ----------
-    r.json(Dict): A python dictionary with the response from twitter API v2.
-    ----------
-    '''
+    r.json : dict
+        A python dictionary with the response from twitter API v2.
+    """
+
     user_id = USER_IDS[account]
 
     r = requests.get(
@@ -120,19 +121,19 @@ def get_tweets(account, parameters):
 
 
 def save_tweets(r_json):
-    '''
-    save_tweets(r_json)
-    Gets the Python dictionary (json object) from the twitter API and inserts the data to the database. 
-    
+    """Gets the Python dictionary (json object) from the twitter API and inserts the data to the database.
+
     Parameters
     ----------
-    text(String): the input text.
-   
+    text : str
+        The input text.
+
     Returns
     ----------
-    formatted_text(String): the rich text.
-    ----------
-    '''
+    formatted_text : str
+        The rich text.
+    """
+
     author_id = r_json["data"][0]["author_id"]
 
     if author_id == USER_IDS["hellenic_police"]:
@@ -156,10 +157,7 @@ def save_tweets(r_json):
 
         if flag:
             new_tweet = police_tweets(
-                id=id,
-                text=text,
-                created_at=created_at,
-                location=location
+                id=id, text=text, created_at=created_at, location=location
             )
         else:
             new_tweet = pyrosvestiki_tweets(
@@ -170,8 +168,9 @@ def save_tweets(r_json):
                 # location=f"SRID=4326;POINT({random()*4+23} {random()*4+37})"
             )
         try:
-            session.add(new_tweet)
-            session.commit()
+            with db_session() as session:
+                session.add(new_tweet)
+                session.commit()
         except:
             print(
                 f"The {new_tweet.__tablename__} tweet with id {new_tweet.id} already exists in DB!"
@@ -179,27 +178,28 @@ def save_tweets(r_json):
 
 
 def initialize_DB_tables(account):
-    '''
-    initialize_DB_tables(account)
-    Populates the database table that corresponds to the account by fetching the maximum number 
-    of tweets (according to the twitter API key)   
-    
+    """
+    Populates the database table that corresponds to the account by fetching the maximum number
+    of tweets (according to the twitter API key).
+
     Parameters
     ----------
-    account(String): the account name. 
-   
+    account : str
+        The account name.
+
     Returns
     ----------
     None
-    ----------
+    """
 
-    '''
     parameters = {
         "max_results": "100",
         "expansions": ["author_id"],
         "tweet.fields": "created_at",
     }
+
     r_json = get_tweets(account, parameters)
+
     while "next_token" in r_json["meta"]:
         save_tweets(r_json)
         parameters["pagination_token"] = r_json["meta"]["next_token"]
@@ -207,6 +207,6 @@ def initialize_DB_tables(account):
     return None
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     initialize_DB_tables("hellenic_police")
     initialize_DB_tables("pyrosvestiki")

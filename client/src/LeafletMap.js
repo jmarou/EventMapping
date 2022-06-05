@@ -1,29 +1,25 @@
-import {renderToString} from "react-dom/server";
-import { useHistory } from "react-router-dom";
-import blueIconpng from "./blueIcon.png";
-import redIconpng from "./redIcon.png";
-import React from "react";
 import axios from "axios";
+import React, { useEffect, useState } from "react";
+import { renderToString } from "react-dom/server";
+import { useHistory } from "react-router-dom";
 import "leaflet-easybutton";
-import "leaflet-easybutton";
-import "./App.css";
 
-let police_tweets;
-let pyrosvestiki_tweets;
+import "./App.css";
+import blueIconpng from "./Icons/blueIcon.png";
+import redIconpng from "./Icons/redIcon.png";
 
 // This line takes leaflet from the index.html declaration
 let L = window.L;
 
 let LeafletMap = (props) => {
-  let history = useHistory();
-  let [mapState, setMapState] = React.useState();
+  // let history = useHistory();
+  let [map, setMap] = useState([]);
+  let [police_tweets, setPolice_tweets] = useState();
+  let [pyrosvestiki_tweets, setPyrosvestiki_tweets] = useState();
 
-  React.useEffect(() => {
-    const home = {
-      lat: 38.505,
-      lng: 23.91,
-      zoom: 6.5,
-    };
+
+
+  function addBasemaps(map) {
     const OpenStreetMap = L.tileLayer(
       "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
       {
@@ -34,12 +30,23 @@ let LeafletMap = (props) => {
       }
     );
 
-    const Google_Satellite = L.tileLayer(
-      "http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
+    const HumanitarianMap = L.tileLayer(
+      "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
       {
         maxZoom: 20,
         maxNativeZoom: 19,
-        subdomains: ["mt0", "mt1", "mt2", "mt3"],
+        attribution:
+          "© OpenStreetMap Contributors. Tiles courtesy of Humanitarian OpenStreetMap Teams",
+      }
+    );
+
+    const TonerMap = L.tileLayer(
+      "https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png",
+      {
+        maxZoom: 20,
+        maxNativeZoom: 19,
+        attribution:
+          'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://www.openstreetmap.org/copyright">ODbL</a>.',
       }
     );
 
@@ -53,17 +60,7 @@ let LeafletMap = (props) => {
       }
     );
 
-    const HumanitarianMap = L.tileLayer(
-      "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
-      {
-        maxZoom: 20,
-        maxNativeZoom: 19,
-        attribution:
-          "© OpenStreetMap Contributors. Tiles courtesy of Humanitarian OpenStreetMap Teams",
-      }
-    );
     const WaterColorMap = L.tileLayer(
-      // "http://c.tile.stamen.com/watercolor/${z}/${x}/${y}.jpg",
       "https://stamen-tiles.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.png",
       {
         maxZoom: 20,
@@ -73,174 +70,35 @@ let LeafletMap = (props) => {
       }
     );
 
-    const TonerMap = L.tileLayer(
-      // "http://c.tile.stamen.com/watercolor/${z}/${x}/${y}.jpg",
-      "https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png",
+    const Google_Satellite = L.tileLayer(
+      "http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
       {
         maxZoom: 20,
         maxNativeZoom: 19,
-        attribution:
-          'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://www.openstreetmap.org/copyright">ODbL</a>.',
+        subdomains: ["mt0", "mt1", "mt2", "mt3"],
       }
     );
 
-    let map = new L.map("mapid", { zoomControl: false, cursor: true });
-    map.setView([home.lat, home.lng], home.zoom, false);
-
-    HumanitarianMap.addTo(map);
-
     const basemaps = {
-      OpenStreetMap: OpenStreetMap,
-      HumanitarianMap: HumanitarianMap,
+      "OpenStreet Map": OpenStreetMap,
+      "Humanitarian Map": HumanitarianMap,
       "Toner Map": TonerMap,
-      OpenTopoMap: OpenTopoMap,
+      "OpenTopo Map": OpenTopoMap,
       "Water Color Map": WaterColorMap,
       "Google Satellite": Google_Satellite,
     };
-    const blueIcon = L.icon({
-      iconUrl: blueIconpng,
-      shadowUrl:
-        "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
-      iconSize: [40, 40],
-      iconAnchor: [20, 40],
-      popupAnchor: [0, -34],
-      shadowAnchor: [13, 40],
-    });
-
-    const redIcon = L.icon({
-      iconUrl: redIconpng,
-      shadowUrl:
-        "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
-      iconSize: [40, 40],
-      iconAnchor: [20, 40],
-      popupAnchor: [0, -34],
-      shadowAnchor: [13, 40],
-    });
-
-    // TEST
-    // let testmarker = L.marker([38.2, 23.23])
-    // .bindPopup(
-    //   // `<blockquote class="twitter-tweet" data-theme="dark"><p lang="el" dir="ltr">❗Περισσότερα από 67 κιλά κάνναβης κατασχέθηκαν από αστυνομικούς της Διεύθυνσης Αστυνομίας Ορεστιάδας σε παρέβρια περιοχή του Έβρου.<br>👉<a href="https://t.co/K4MkPuiAVI">https://t.co/K4MkPuiAVI</a> <a href="https://t.co/zVLMGR2VCC">pic.twitter.com/zVLMGR2VCC</a></p>&mdash; Ελληνική Αστυνομία (@hellenicpolice) <a href="https://twitter.com/hellenicpolice/status/1494387434112655362?ref_src=twsrc%5Etfw">February 17, 2022</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script> `
-    //   `<blockquote class="twitter-tweet"><p lang="el" dir="ltr"><a href="https://twitter.com/hellenicpolice/status/1494387434112655362?ref_src=twsrc%5Etfw">February 17, 2022</a></blockquote>`
-    // )
-    // .addTo(map);
-
-    // console.log(file);
-    // var layer1 = L.geoJson(file, {
-    //       pointToLayer: function (feature, latlng) {
-    //         return L.marker(latlng, {icon: redIcon});
-    //       } ,
-    //       onEachFeature: function (feature, layer, latlng) {
-    //         layer.bindPopup(
-    //           renderToString(
-    //             <div>
-    //               <h1>Tweet</h1>
-    //               {/* <a href={"https://twitter.com/pyrosvestiki/status/"+ feature.properties.id}>Tweet</a> */}
-    //               <h3><strong>Id</strong> = {feature.properties.id}</h3>
-    //               <h3><strong>Created At</strong> = {Date(feature.properties.created_at).split(' ').slice(0,5).join(' ')}</h3>
-    //               <h3><strong>Location</strong> = [{feature.geometry.coordinates[0]},{feature.geometry.coordinates[1]}]</h3>
-    //               <h3><strong>Text</strong></h3>
-    //               <h3>{feature.properties.text}</h3>
-    //            </div>
-    //           )
-    //         );
-    //     }
-    // }).addTo(map);
-    // layer1.setStyle({redIcon});
-
-    axios.get("/GetLayer_Police").then(function (response) {
-      console.log(response.data);
-      police_tweets = L.geoJson(response.data, {
-        pointToLayer: function (feature, latlng) {
-          return L.marker(latlng, { icon: blueIcon });
-        },
-        onEachFeature: function (feature, layer, latlng) {
-          layer.bindPopup(
-            renderToString(
-              <div>
-                <h2>Hellenic Police Tweet</h2>
-                {/* <h1><a href="https://twitter.com/pyrosvestiki/status/{feature.properties.id}" Tweet></a></h1> */}
-                <p>
-                  <strong>Id</strong> = {feature.properties.id}
-                  <hr />
-                  <strong>Created At</strong> ={" "}
-                  {Date(feature.properties.created_at)
-                    .split(" ")
-                    .slice(0, 5)
-                    .join(" ")}
-                  <hr />
-                  <strong>Location</strong> = [{feature.geometry.coordinates[0]}
-                  ,{feature.geometry.coordinates[1]}]
-                  <hr />
-                  <strong>Text</strong>
-                </p>
-              </div>
-            ) + 
-            feature.properties.text
-          );
-        },
-      })
-        police_tweets.addTo(map);
-        axios.get("/GetLayer_Pyrosvestiki").then(function (response) {
-          // console.log(response.data);
-          pyrosvestiki_tweets = L.geoJson(response.data, {
-            pointToLayer: function (feature, latlng) {
-              return L.marker(latlng, { icon: redIcon });
-            },
-            onEachFeature: function (feature, layer) {
-              layer.bindPopup(
-                renderToString(
-                  <div>
-                  <h1>Hellenic Fire Department Tweet</h1>
-                  <p>
-                    <strong>Id</strong> = {feature.properties.id}<hr />
-                  {/* </p>
-                  <p> */}
-                    <strong>Created At</strong> ={" "}
-                    {Date(feature.properties.created_at)
-                      .split(" ")
-                      .slice(0, 5)
-                      .join(" ")}
-                  {/* </p>
-                  <p> */}
-                    <hr />
-                    <strong>Location</strong> = [
-                    {feature.geometry.coordinates[0]},
-                    {feature.geometry.coordinates[1]}]
-                  {/* </p>
-                  <p> */}
-                     <hr />
-                    <strong>Text</strong>
-                  </p>
-                </div>
-              ) +
-              feature.properties.text
-              )
-            }
-        });
-        pyrosvestiki_tweets.addTo(map);
-        
-        const overlaymaps = {
-          "Tweets: Hellenic Fire Department": pyrosvestiki_tweets,
-          "Tweets: Hellenic Police": police_tweets,
-        };
-        L.control.layers(basemaps, overlaymaps).addTo(map);
-      });
-      
-    });
     
-    L.control.zoom({ position: "topleft" }).addTo(map);
+    // const overlaymaps = {
+    //   "Tweets: Hellenic Fire Department": pyrosvestiki_tweets,
+    //   "Tweets: Hellenic Police": police_tweets,
+    // };
 
-    // map.setMaxBounds(map.getBounds());
+    // Add the control layer and set Humanitarian Map as default
+    L.control.layers(basemaps).addTo(map);
+    HumanitarianMap.addTo(map);
+  }
 
-    L.easyButton(
-      "fa-home",
-      function (btn, map) {
-        map.setView([home.lat, home.lng], home.zoom);
-      },
-      "Initial View"
-    ).addTo(map);
-
+  function positionUpdate(map) {
     let Position = L.Control.extend({
       _container: null,
       options: {
@@ -266,11 +124,29 @@ let LeafletMap = (props) => {
 
     let position = new Position();
     map.addControl(position);
+
     map.addEventListener("mousemove", (event) => {
       let lat = Math.round(event.latlng.lat * 100000) / 100000;
       let lng = Math.round(event.latlng.lng * 100000) / 100000;
       position.updateHTML(lat, lng);
     });
+  }
+
+  function addMapControls(map, home) {
+    L.control.zoom({ position: "topleft" }).addTo(map);
+
+    // map.setMaxBounds(map.getBounds());
+
+    L.easyButton(
+      "fa-home",
+      function () {
+        map.setView([home.lat, home.lng], home.zoom);
+      },
+      "Initial View"
+    ).addTo(map);
+
+    positionUpdate(map);
+
     L.control
       .scale({
         metric: true,
@@ -279,13 +155,111 @@ let LeafletMap = (props) => {
         maxWidth: 100,
       })
       .addTo(map);
+  }
 
-    setMapState(map);
+  function popUpContainer(feature, department) {
+    return renderToString(
+      <div>
+        {department === "Police" ? (
+          <h4 style={{ color: "#0e11db" }}>Hellenic Police Tweet</h4>
+        ) : (
+          <h4 style={{ color: "#ce1c1c" }}>Pyrosvestiki Tweet</h4>
+        )}
+        {/* <h1><a href="https://twitter.com/pyrosvestiki/status/{feature.properties.id}" Tweet></a></h1> */}
+        <p>
+          <strong>Id</strong> = {feature.properties.id}
+          <hr />
+          <strong>Created At</strong> ={" "}
+          {Date(feature.properties.created_at).split(" ").slice(0, 5).join(" ")}
+          <hr />
+          <strong>Location</strong> = [{feature.geometry.coordinates[0]},
+          {feature.geometry.coordinates[1]}]
+          <hr />
+          <strong>Text</strong>
+        </p>
+      </div>
+    );
+  }
+
+  useEffect(function mapInitialization() {
+    const home = {
+      lat: 38.505,
+      lng: 23.91,
+      zoom: 6.5,
+    };
+
+    // Leaflet map creation
+    map = new L.map("mapid", { zoomControl: false, cursor: true });
+    map.setView([home.lat, home.lng], home.zoom, false);
+    addBasemaps(map);
+    addMapControls(map, home);
   }, []);
+
+  useEffect(function getLayers () {
+    const blueIcon = L.icon({
+      iconUrl: blueIconpng,
+      shadowUrl:
+        "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
+      iconSize: [40, 40],
+      iconAnchor: [20, 40],
+      popupAnchor: [0, -34],
+      shadowAnchor: [13, 40],
+    });
+
+    const redIcon = L.icon({
+      iconUrl: redIconpng,
+      shadowUrl:
+        "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
+      iconSize: [40, 40],
+      iconAnchor: [20, 40],
+      popupAnchor: [0, -34],
+      shadowAnchor: [13, 40],
+    });
+
+    axios.get("/getLayer/police_tweets").then(function (response) {
+      console.log(response.data);
+      police_tweets = L.geoJson(response.data, {
+        pointToLayer: function (feature, latlng) {
+          return L.marker(latlng, { icon: blueIcon });
+        },
+        onEachFeature: function (feature, layer, latlng) {
+          layer.bindPopup(
+            popUpContainer(feature, "Police") + feature.properties.text
+          );
+        },
+      });
+      police_tweets.addTo(map);
+    });
+
+    axios.get("/getLayer/pyrosvestiki_tweets").then(function (response) {
+      console.log(response.data);
+      pyrosvestiki_tweets = L.geoJson(response.data, {
+        pointToLayer: function (feature, latlng) {
+          return L.marker(latlng, { icon: redIcon });
+        },
+        onEachFeature: function (feature, layer, latlng) {
+          layer.bindPopup(
+            popUpContainer(feature, "Pyrosvestiki") + feature.properties.text
+          );
+        },
+      });
+      pyrosvestiki_tweets.addTo(map);
+    });
+  }, map);
+
+  //   // TEST
+  //   // let testmarker = L.marker([38.2, 23.23])
+  //   // .bindPopup(
+  //   //   // `<blockquote class="twitter-tweet" data-theme="dark"><p lang="el" dir="ltr">❗Περισσότερα από 67 κιλά κάνναβης κατασχέθηκαν από αστυνομικούς της Διεύθυνσης Αστυνομίας Ορεστιάδας σε παρέβρια περιοχή του Έβρου.<br>👉<a href="https://t.co/K4MkPuiAVI">https://t.co/K4MkPuiAVI</a> <a href="https://t.co/zVLMGR2VCC">pic.twitter.com/zVLMGR2VCC</a></p>&mdash; Ελληνική Αστυνομία (@hellenicpolice) <a href="https://twitter.com/hellenicpolice/status/1494387434112655362?ref_src=twsrc%5Etfw">February 17, 2022</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script> `
+  //   //   `<blockquote class="twitter-tweet"><p lang="el" dir="ltr"><a href="https://twitter.com/hellenicpolice/status/1494387434112655362?ref_src=twsrc%5Etfw">February 17, 2022</a></blockquote>`
+  //   // )
+  //   // .addTo(map);
+
+  console.log("main JS");
 
   return (
     <div id="mapMainContainer" style={{ position: "relative" }}>
-      <div id="mapid"></div>
+      <div id="mapid">{map}</div>
     </div>
   );
 };
