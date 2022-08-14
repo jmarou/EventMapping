@@ -216,7 +216,13 @@ let LeafletMap = (props) => {
       shadowAnchor: [13, 40],
     });
 
-    axios.get("/getLayer/police_tweets").then(function (response) {
+    axios.get("/getLayer",
+      {
+        params: {
+          department: "Police"
+        }
+      }
+    ).then(function (response) {
       console.log(response.data);
       police_tweets = L.geoJson(response.data, {
         pointToLayer: function (feature, latlng) {
@@ -231,7 +237,13 @@ let LeafletMap = (props) => {
       police_tweets.addTo(map);
     });
 
-    axios.get("/getLayer/pyrosvestiki_tweets").then(function (response) {
+    axios.get("/getLayer", 
+      {
+        params: {
+          department: "Pyrosvestiki"
+        }
+      }
+    ).then(function (response) {
       console.log(response.data);
       pyrosvestiki_tweets = L.geoJson(response.data, {
         pointToLayer: function (feature, latlng) {
