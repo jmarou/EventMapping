@@ -1,11 +1,7 @@
 from geoalchemy2 import Geometry, functions
 from shapely import wkb
 from sqlalchemy import (
-    create_engine,
-    MetaData,
-    Table,
     Column,
-    Integer,
     String,
     DateTime,
     BIGINT,
@@ -13,11 +9,15 @@ from sqlalchemy import (
 
 from db.database import Base, engine
 
-# @hellenicpolice -> 119014566 ||  @pyrosvestiki -> 158003436
-USER_IDS = {"hellenic_police": 119014566, "pyrosvestiki": 158003436}
+# user ids given by twitter to accounts
+USER_IDS = {
+    "hellenic_police": 119014566,
+    "pyrosvestiki": 158003436
+}
 
 
 class pyrosvestiki_tweets(Base):
+    """DB model for pyrosvestiki tweets."""
     __tablename__ = "pyrosvestiki_tweets"
 
     id = Column("id", BIGINT, primary_key=True)
@@ -32,8 +32,6 @@ class pyrosvestiki_tweets(Base):
         self.location = location
 
     def __repr__(self):
-        # return f"Tweet from Pyrosvestiki with id: {self.id!r}, created_at: {self.created_at!r}. Text: {self.text!r}. The location is: {self.location!r}"
-        # return "{'type': 'Feature', 'properties': {'id': {self.id}, 'created_at: }, 'geometry': {'type': 'Point','coordinates': []}}"
         return """
         {"type": "Feature",
         "properties": {
@@ -53,6 +51,7 @@ class pyrosvestiki_tweets(Base):
 
 
 class police_tweets(Base):
+    """DB model for police tweets."""
     __tablename__ = "police_tweets"
 
     id = Column("id", BIGINT, primary_key=True)
@@ -87,7 +86,6 @@ class police_tweets(Base):
 
 def create_DB_tables():
     """Run this function to create the tables in postgresql."""
-
     Base.metadata.create_all(engine)
 
 

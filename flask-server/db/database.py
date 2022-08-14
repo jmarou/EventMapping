@@ -3,7 +3,7 @@ from typing import ContextManager
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm import Session, sessionmaker
 
 # In product environment this would be saved in environment
 SQLALCHEMY_DATABASE_URL = "postgresql://testuser:testpassword@localhost/eventmapping"
