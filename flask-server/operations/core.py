@@ -3,8 +3,8 @@ from typing import Any
 
 import geoalchemy2.functions as geo_func
 import geocoder
-import pandas as pd
-from matplotlib.pyplot import get, streamplot
+# import pandas as pd
+# from matplotlib.pyplot import get, streamplot
 from requests import session 
 
 from db.database import Base, db_session
@@ -99,3 +99,7 @@ def format_geojson(query_result: Any) -> str:
         + geojson[:-1]
         + '], "crs":{"type":"name","properties":{"name":"urn:ogc:def:crs:EPSG::4326"}}}'
     )
+
+def get_layer_as_geojson(department: str = None):
+    return format_geojson(filter_tweets(department))
+    
