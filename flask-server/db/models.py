@@ -9,16 +9,10 @@ from sqlalchemy import (
 
 from db.database import Base, engine
 
-# user ids given by twitter to accounts
-USER_IDS = {
-    "hellenic_police": 119014566,
-    "pyrosvestiki": 158003436
-}
 
-
-class pyrosvestiki_tweets(Base):
+class PyrosvestikiTweets(Base):
     """DB model for pyrosvestiki tweets."""
-    __tablename__ = "pyrosvestiki_tweets"
+    __tablename__ = "pyrosvestikitweets"
 
     id = Column("id", BIGINT, primary_key=True)
     text = Column("text", String)
@@ -50,9 +44,9 @@ class pyrosvestiki_tweets(Base):
         )
 
 
-class police_tweets(Base):
+class PoliceTweets(Base):
     """DB model for police tweets."""
-    __tablename__ = "police_tweets"
+    __tablename__ = "policetweets"
 
     id = Column("id", BIGINT, primary_key=True)
     text = Column("text", String)

@@ -1,30 +1,13 @@
 import random
 from typing import Any
 
-import geoalchemy2.functions as geo_func
 import geocoder
-# import pandas as pd
-# from matplotlib.pyplot import get, streamplot
-from requests import session 
-
-from db.database import Base, db_session
-from db.models import police_tweets, pyrosvestiki_tweets
-
-
-def filter_tweets(department: str) -> Any:
-    departmentTable = \
-        police_tweets if department == "Police" else pyrosvestiki_tweets
-    
-    with db_session() as session:
-        query = session.query(geo_func.ST_AsGeoJSON(departmentTable)).where(
-            departmentTable.location != None
-        )
-
-    return query
 
 
 def calc_location(text: str) -> str:
-    """Gets the tweet's plain text and returns the location as WKT (POINT(lng lat)).
+    """
+    Gets the tweet's plain text and returns the location as WKT 
+    (POINT(lng lat)).
 
     Parameters
     ----------
@@ -50,6 +33,20 @@ def calc_location(text: str) -> str:
 
 
 def get_capital_words(text: str) -> str:
+    """
+    Extracts only the capital words for text written in Greek and returns them 
+    as comma separated string.
+
+    Parameters
+    ----------
+    text: str
+        The input text.
+    
+    Returns
+    ----------
+    capital_words: str
+        Comma separated capital words.
+    """
     for word in text.split()[1:]:
         unicode = ord(word[0])
         if unicode >= 913 and unicode <= 937:
@@ -59,7 +56,9 @@ def get_capital_words(text: str) -> str:
 
 
 def format_text(text: str) -> str:  
-    """Gets the tweet's plain text and returns a rich text, including http links and twitter hashtags.
+    """
+    Gets the tweet's plain text and returns a rich text, including http links
+    and twitter hashtags.
 
     Parameters
     ----------
@@ -99,7 +98,3 @@ def format_geojson(query_result: Any) -> str:
         + geojson[:-1]
         + '], "crs":{"type":"name","properties":{"name":"urn:ogc:def:crs:EPSG::4326"}}}'
     )
-
-def get_layer_as_geojson(department: str = None):
-    return format_geojson(filter_tweets(department))
-    
