@@ -32,27 +32,17 @@ def calc_location(text: str) -> str:
     return None
 
 
-def get_capital_words(text: str) -> str:
-    """
-    Extracts only the capital words for text written in Greek and returns them 
-    as comma separated string.
-
-    Parameters
-    ----------
-    text: str
-        The input text.
+def format_geojson(query_result: Any) -> str:
+    """Returns filtered query results as a geojson.""" 
+    geojson = ""
+    for tweet in query_result:
+        geojson += tweet[0] + ","
     
-    Returns
-    ----------
-    capital_words: str
-        Comma separated capital words.
-    """
-    for word in text.split()[1:]:
-        unicode = ord(word[0])
-        if unicode >= 913 and unicode <= 937:
-            capital_words = word + ","
-    
-    return capital_words
+    return (
+        '{"type": "FeatureCollection","features": ['
+        + geojson[:-1]
+        + '], "crs":{"type":"name","properties":{"name":"urn:ogc:def:crs:EPSG::4326"}}}'
+    )
 
 
 def format_text(text: str) -> str:  
@@ -87,14 +77,25 @@ def format_text(text: str) -> str:
     return formatted_text
 
 
-def format_geojson(query_result: Any) -> str:
-    """Returns filtered query results as a geojson.""" 
-    geojson = ""
-    for tweet in query_result:
-        geojson += tweet[0] + ","
+def get_capital_words(text: str) -> str:
+    """
+    Extracts only the capital words for text written in Greek and returns them 
+    as comma separated string.
+
+    Parameters
+    ----------
+    text: str
+        The input text.
     
-    return (
-        '{"type": "FeatureCollection","features": ['
-        + geojson[:-1]
-        + '], "crs":{"type":"name","properties":{"name":"urn:ogc:def:crs:EPSG::4326"}}}'
-    )
+    Returns
+    ----------
+    capital_words: str
+        Comma separated capital words.
+    """
+    capital_words = ""
+    for word in text.split()[1:]:
+        unicode = ord(word[0])
+        if unicode >= 913 and unicode <= 937:
+            capital_words = word + ","
+    
+    return capital_words

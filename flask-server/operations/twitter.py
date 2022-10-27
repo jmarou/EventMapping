@@ -1,9 +1,12 @@
 import os
 import requests
-
+from datetime import datetime
+from typing import List
 
 # token for twitter API
-TWITTER_TOKEN = os.getenv("TOKEN")
+# TWITTER_TOKEN = os.getenv("TOKEN")
+with open(r'/home/john/EventMapping/flask-server/token.txt', 'r') as f:
+    TWITTER_TOKEN = f.read()
 
 # account ids given by twitter to user accounts
 ACCOUNT_IDS = {
@@ -31,7 +34,7 @@ class BearerAuth(requests.auth.AuthBase):
         return r
 
 
-def download_tweets(account_id: int, parameters: dict) -> dict:
+def download_tweets(account_id: int, max_results: int=100) -> List:
     """
     Gets the account name of the twitter user and a set of parameters and 
     returns the last tweets from their timeline.
@@ -46,13 +49,35 @@ def download_tweets(account_id: int, parameters: dict) -> dict:
     r.json : dict
         A python dictionary with the response from twitter API v2.
     """
-    r = requests.get(
-        auth = BearerAuth(TWITTER_TOKEN),
-        url = "https://api.twitter.com/2/users/{}/tweets".format(account_id),
-        params = parameters,
-    )
+    parameters = DEFAULT_TWEET_PARAMETERS
+    r_data = []
+    while True:
+        r_json_next = requests.get(
+            auth = BearerAuth(TWITTER_TOKEN),
+            url = "https://api.twitter.com/2/users/{}/tweets".format(account_id),
+            params = parameters
+        ).json()
+        r_data_next = r_json_next['data']
+        print_message(
+            len=len(r_data_next),
+            first_date=r_data_next[0]['created_at'],
+            last_date=r_data_next[-1]['created_at']
+        )
+        # r_json = {**r_json, **r_json_next}
+        r_data += r_data_next
+        max_results -= 100
+        if max_results <= 0 or "next_token" not in r_json_next["meta"]:
+            break
+        else:
+            # continue with the next patch of tweets
+            parameters["pagination_token"] = r_json_next["meta"]["next_token"]
+            parameters['max_results'] = min(100, max_results)
     
-    print(f"Last twitter: {r.json()['data'][0]['created_at']}")
-    print(f"Fetched {len(r.json()['data'])} new tweets")
-    
-    return r.json()
+    return r_data        
+
+
+def print_message(len: str, first_date: str, last_date: str) -> str:
+    print(f"Fetched {len} new tweets from "\
+        f"{datetime.strptime(first_date, '%Y-%m-%dT%H:%M:%S.%f%z').date()}"\
+        " until "\
+        f"{datetime.strptime(last_date, '%Y-%m-%dT%H:%M:%S.%f%z').date()}")
