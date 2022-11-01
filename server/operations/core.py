@@ -1,5 +1,7 @@
 import random
+import re
 from typing import Any
+
 
 import geocoder
 
@@ -99,3 +101,29 @@ def get_capital_words(text: str) -> str:
             capital_words = word + ","
     
     return capital_words
+  
+
+def remove_links_emojis(text):
+    """Gets the tweet's plain text and returns the same texting without the html 
+    links (<a href=url></a>) and without hashtags.
+
+    Parameters
+    ----------
+    text : str
+        The input text.
+
+    Returns
+    ----------
+    formatted_text : str
+        The tweet text wihtout html links and/or hashtags.
+    """
+    # TODO: Optimize this function for better regex!
+    # remove the href links
+    text = re.sub(r'<a href=[\'"]?[^>]+>', '', text)
+    text = re.sub(r'</a>', '', text)
+    # remove hashtags
+    text = re.sub('#', '', text)
+    # remove any remaining links from the text
+    text = re.sub("https?://.*", '', text)
+    # remove anything that is not word, whitespace, comma or period (emojis)
+    return re.sub(r'[^\w\s,.]', '', text)  

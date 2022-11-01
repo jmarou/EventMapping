@@ -5,7 +5,7 @@ from typing import List
 
 # token for twitter API
 # TWITTER_TOKEN = os.getenv("TOKEN")
-with open(r'/home/john/EventMapping/flask-server/token.txt', 'r') as f:
+with open(r'/home/john/EventMapping/server/token.txt', 'r') as f:
     TWITTER_TOKEN = f.read()
 
 # account ids given by twitter to user accounts
