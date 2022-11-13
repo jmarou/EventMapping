@@ -2,8 +2,20 @@ import random
 import re
 from typing import Any
 
-
 import geocoder
+import pandas as pd 
+
+default_pattern = re.compile((
+"(?:(?:νότιας )|(?:βόρειας )|(?:ανατολικής )|(?:δυτικής )|"
+"(?:στην? Λ. )|(?:λεωφόρο )|(?:[ν|Ν]ομού )|(?:στο κέντρο της )|(?:κέντρου? )|"
+"(?:νήσου )|(?:λίμνη )|(?:Π.Υ. )|(?:(?:της )? Π.Ε. )|"
+"(?:επί της )|(?:επί της οδού )|(?:στην οδό )|(?:οδού )|"
+"(?:στην? περιοχή )|(?:περιοχής της )|"
+"(?:στον? δήμο )|(?:(?:του )?δήμου )?|"
+"(?:στην? )|(?:στα )|(?:στους )|(?:στον? )|"
+"(?:(?:του|της ))|"
+"(?:(?:δημοτική )?(?:κοινότητα|ενότητα) ))"
+"(?:(?:[Α-ΩΆΈΊΎΏΉΌ]|(?:\d+))[α-ωάέύίόώήϊΐϋ.]+\s?)+"), flags=re.I)
 
 
 def calc_location(text: str) -> str:
@@ -77,6 +89,31 @@ def format_text(text: str) -> str:
     formatted_text = " ".join(text_list)
 
     return formatted_text
+
+
+def find_woi_in_text(text: str, pattern: re.compile = default_pattern)\
+    -> str:
+    """
+    Given an input text returns key phrases containing location information. The
+    search is based on regular expression matching.
+
+    Parameters
+    ----------
+    text: str
+        The input text.
+    
+    Returns
+    ---------- 
+    words of interest: str
+        Key phrases/words that contain location information. These are 
+        joined by spaces. If nothing is found returns an empty string.
+    """
+
+    m = re.findall(pattern=pattern, string=text)
+    if m:
+        return " ".join([match.rstrip() for match in m])
+    else:
+        return ''
 
 
 def get_capital_words(text: str) -> str:
