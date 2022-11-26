@@ -1,10 +1,9 @@
-from geoalchemy2 import Geometry, functions
-from shapely import wkb
 from sqlalchemy import (
     Column,
     String,
     DateTime,
     BIGINT,
+    Float
 )
 
 from db.database import Base, engine
@@ -17,30 +16,35 @@ class PyrosvestikiTweets(Base):
     id = Column("id", BIGINT, primary_key=True)
     text = Column("text", String)
     created_at = Column("created_at", DateTime)
-    location = Column("location", Geometry(geometry_type="POINT", srid=4326))
+    latitude = Column("latitude", Float)
+    longitude = Column("longitude", Float)
 
-    def __init__(self, id, text, created_at, location="SRID=4326;POINT(0 0)"):
+    def __init__(self, id, text, created_at, latitude=None, longitude=None): 
         self.id = id
         self.text = text
         self.created_at = created_at
-        self.location = location
+        self.latitude = latitude
+        self.longitude = longitude
 
     def __repr__(self):
         return """
         {"type": "Feature",
         "properties": {
             "id": %s, 
-            "created_at": %s
+            "created_at": "%s",
+            "text": "%s"
             },
         "geometry": {
             "type": "Point",
-            "coordinates": [%s]
+            "coordinates": [%s, %s]
             }
         }
         """ % (
             self.id,
             self.created_at.strftime("%d/%m/%Y, %H:%M:%S"),
-            wkb.loads(self.location, hex=True),
+            self.text,
+            self.latitude, 
+            self.longitude
         )
 
 
@@ -51,30 +55,34 @@ class PoliceTweets(Base):
     id = Column("id", BIGINT, primary_key=True)
     text = Column("text", String)
     created_at = Column("created_at", DateTime)
-    location = Column("location", Geometry(geometry_type="POINT", srid=4326))
+    latitude = Column("latitude", Float)
+    longitude = Column("longitude", Float)
 
-    def __init__(self, id, text, created_at, location="SRID=4326;POINT(0 0)"):
+    def __init__(self, id, text, created_at, latitude=None, longitude=None):
         self.id = id
         self.text = text
         self.created_at = created_at
-        self.location = location
+        self.latitude = latitude
+        self.longitude = longitude
 
     def __repr__(self):
         return """
         {"type": "Feature",
         "properties": {
             "id": %s, 
-            "created_at": %s
+            "created_at": "%s"
             },
         "geometry": {
             "type": "Point",
-            "coordinates": [%s]
+            "coordinates": [%s, %s]
             }
         }
         """ % (
             self.id,
             self.created_at.strftime("%d/%m/%Y, %H:%M:%S"),
-            functions.ST_GeomAsText(self.location),
+            # self.text,
+            self.latitude, 
+            self.longitude
         )
 
 

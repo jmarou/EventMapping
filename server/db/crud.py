@@ -2,7 +2,6 @@ from datetime import datetime
 from typing import Any, List
 
 import geoalchemy2.functions as geo_func
-from sqlalchemy.sql import text
 
 from db.database import db_session
 from db.models import PyrosvestikiTweets, PoliceTweets
@@ -29,8 +28,8 @@ def get_tweets_with_location(department: str) -> Any:
     departmentTable = str2department(department=department)
     
     with db_session() as session:
-        query = session.query(geo_func.ST_AsGeoJSON(departmentTable)).where(
-            departmentTable.location != None
+        query = session.query(departmentTable).where(
+            departmentTable.latitude!=None
         )
 
     return query
@@ -54,13 +53,11 @@ def get_tweets_with_filter(department: str, order_by: str = None,
     #     where_clause += f' WHERE {departmentTable.__tablename__}'
 
     # print(where_clause)
-
+    # with db_session() as session:
+    #     query = session.query(departmentTable).filter(text(where_clause))
     
-
-    with db_session() as session:
-        query = session.query(departmentTable).filter(text(where_clause))
-    
-    return query
+    return None
+    # return query
 
 
 def save_tweets(r_data: List) -> None:
@@ -81,9 +78,9 @@ def save_tweets(r_data: List) -> None:
     author_id = r_data[0]["author_id"]
 
     if author_id == ACCOUNT_IDS["hellenic_police"]:
-        department_tweets = PoliceTweets
+        departmentTable = PoliceTweets
     elif author_id == ACCOUNT_IDS["pyrosvestiki"]:
-        department_tweets = PyrosvestikiTweets
+        departmentTable = PyrosvestikiTweets
     else: 
         raise ValueError
 
@@ -96,12 +93,13 @@ def save_tweets(r_data: List) -> None:
         # the content of the tweet. The processing incorporates links for the HTML content
         text = format_text(tweet["text"])
         # get the location via geocoding analysis
-        location = calc_location(tweet["text"])
-        new_tweet = department_tweets(
+        longitude, latitude = calc_location(tweet["text"])
+        new_tweet = departmentTable(
                 id=id,
                 text=text,
                 created_at=created_at,
-                location=location
+                longitude=longitude,
+                latitude=latitude
         )
         try:
             with db_session() as session:

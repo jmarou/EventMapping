@@ -6,7 +6,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session, sessionmaker
 
 # In product environment this would be saved in environment
-SQLALCHEMY_DATABASE_URL = "postgresql://testuser:testpassword@localhost/eventmapping"
+SQLALCHEMY_DATABASE_URL = "sqlite:///tweets.db"
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL  # , connect_args={"check_same_thread": False}
