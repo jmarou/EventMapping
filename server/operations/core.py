@@ -41,16 +41,17 @@ def calc_location(text: str) -> str:
     # The tween has to be inside Greece!
     if geo.country_code == "gr":
         # add a slight randomness to the location to avoid two markers on leaflet to overlap 100%
-        return f"SRID=4326;POINT({geo.lng} {geo.lat + random.random()/1000})"
+        return geo.lng, geo.lat
+        # return f"SRID=4326;POINT({geo.lng} {geo.lat + random.random()/1000})"
     
-    return None
+    return None, None
 
 
 def format_geojson(query_result: Any) -> str:
     """Returns filtered query results as a geojson.""" 
     geojson = ""
     for tweet in query_result:
-        geojson += tweet[0] + ","
+        geojson += tweet.__repr__() + ","
     
     return (
         '{"type": "FeatureCollection","features": ['
