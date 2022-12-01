@@ -9,10 +9,6 @@ from operations.core import format_geojson
 app = Flask(__name__, static_url_path="/", static_folder="../client/build")
 
 
-def get_layer_as_geojson(department: str = None):
-    return format_geojson(get_tweets_with_location(department))
-
-
 @app.route("/")
 def homepage():
     return send_from_directory("../client/build", "index.html")
@@ -20,7 +16,9 @@ def homepage():
 
 @app.route("/getLayer", methods=["GET"])
 def getLayer():
-    return get_layer_as_geojson(request.args.get("department"))
+    return format_geojson(
+        get_tweets_with_location(request.args.get("department"))
+    )
 
 
 @app.route("/downloadTweets", methods=["POST"])

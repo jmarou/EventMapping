@@ -3,7 +3,7 @@ import re
 from typing import Any
 
 import geocoder
-import pandas as pd 
+# import pandas as pd 
 
 default_pattern = re.compile((
 "(?:(?:νότιας )|(?:βόρειας )|(?:ανατολικής )|(?:δυτικής )|"
@@ -20,8 +20,8 @@ default_pattern = re.compile((
 
 def calc_location(text: str) -> str:
     """
-    Gets the tweet's plain text and returns the location as WKT 
-    (POINT(lng lat)).
+    Gets a text including words or phrases describing geographic locations 
+    (words of interest) and returns the latitude, longitude from the geocoder.
 
     Parameters
     ----------
@@ -33,11 +33,7 @@ def calc_location(text: str) -> str:
     location : str
         The geolocation as WKT (Well known text).
     """
-
-    # TODO: Have to find better way to extract location!
-    capital_words = get_capital_words(text)
-
-    geo = geocoder.osm(capital_words)
+    geo = geocoder.osm(text)
     # The tween has to be inside Greece!
     if geo.country_code == "gr":
         # add a slight randomness to the location to avoid two markers on leaflet to overlap 100%
