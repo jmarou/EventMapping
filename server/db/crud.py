@@ -1,12 +1,10 @@
 from datetime import datetime
-from typing import Any, List
-
-import geoalchemy2.functions as geo_func
+from typing import Any, List, Union
 
 from db.database import db_session
 from db.models import PyrosvestikiTweets, PoliceTweets
 from operations.core import format_text, calc_location
-from operations.twitter import (ACCOUNT_IDS, download_tweets)
+from operations.twitter import ACCOUNT_IDS
 
 
 def str2department(department: str):
@@ -60,47 +58,25 @@ def get_tweets_with_filter(department: str, order_by: str = None,
     # return query
 
 
-def save_tweets(r_data: List) -> None:
+def save_tweets(tweet: Union[dict, List]) -> None:
     """
-    Gets the Python dictionary (json object) from the twitter API and inserts
-    the data to the database.
+    Gets a tweet or a list of tweets and writes them to the database   
 
     Parameters
     ----------
-    text : str
-        The input text.
+    text : Union[dict, List[dict]]
+        The tweets.
 
     Returns
     ----------
-    formatted_text : str
-        The rich text.
+    None
     """
-    author_id = r_data[0]["author_id"]
-
-    if author_id == ACCOUNT_IDS["hellenic_police"]:
-        departmentTable = PoliceTweets
-    elif author_id == ACCOUNT_IDS["pyrosvestiki"]:
-        departmentTable = PyrosvestikiTweets
-    else: 
-        raise ValueError
+    if isinstance(tweet, dict):
+        tweets = [tweet]
 
     # TODO: First check if tweet exists in database
-    for tweet in r_data:
-        # the id of the tweet
-        id = tweet["id"]
-        # the datetime for the timestamp of the tweet creation (ISO with timezone)
-        created_at = datetime.strptime(tweet["created_at"], "%Y-%m-%dT%H:%M:%S.%f%z")       
-        # the content of the tweet. The processing incorporates links for the HTML content
-        text = format_text(tweet["text"])
-        # get the location via geocoding analysis
-        longitude, latitude = calc_location(tweet["text"])
-        new_tweet = departmentTable(
-                id=id,
-                text=text,
-                created_at=created_at,
-                longitude=longitude,
-                latitude=latitude
-        )
+    for tweet in tweets:
+        new_tweet = create_new_tweet(tweet)
         try:
             with db_session() as session:
                 session.add(new_tweet)
@@ -109,7 +85,51 @@ def save_tweets(r_data: List) -> None:
                     f"[{new_tweet.id}] is saved in the database!"
                 )
         except:
-            print(
-                f"The {new_tweet.__tablename__} tweet with id {new_tweet.id} already exists in DB!"
-            )
+            print(f"The {new_tweet.__tablename__} tweet with id {new_tweet.id} \
+                  already exists in DB!")
     return None
+
+
+def create_new_tweet(tweet: dict) -> Union[PoliceTweets,
+                                           PyrosvestikiTweets]:
+    """
+    Converts a tweet from a dictionary object to database model object class
+
+    Parameters
+    ----------
+    tweet : dict
+        The tweet as python dictionary (json format)
+
+    Returns
+    ----------
+    _ : db.models 
+        The tweet as db.model (PoliceTweets or PyrosvestikiTweets)
+    """
+    author_id = tweet["author_id"]
+
+    if author_id == ACCOUNT_IDS["hellenic_police"]:
+        departmentTable = PoliceTweets
+    elif author_id == ACCOUNT_IDS["pyrosvestiki"]:
+        departmentTable = PyrosvestikiTweets
+    else: 
+        raise ValueError
+
+    # the id of the tweet
+    id = tweet["id"]
+
+    # the datetime for the timestamp of the tweet creation (ISO with timezone)
+    created_at = datetime.strptime(tweet["created_at"], "%Y-%m-%dT%H:%M:%S.%f%z")       
+    
+    # the content of the tweet. 
+    # The processing incorporates links for the HTML content
+    text = format_text(tweet["text"])
+    
+    # get the location via geocoding analysis
+    longitude, latitude = calc_location(tweet["text"])
+    return departmentTable(
+                id=id,
+                text=text,
+                created_at=created_at,
+                longitude=longitude,
+                latitude=latitude
+           )
