@@ -10,9 +10,9 @@ from operations.twitter import ACCOUNT_IDS
 def str2department(department: str):
     """Given the name of the department returns its database class
     """
-    if department == "Police":
+    if department.lower() == "police":
         return PoliceTweets
-    elif department == "Pyrosvestiki":
+    elif department.lower() == "pyrosvestiki":
         return PyrosvestikiTweets
     else:
         raise ValueError
@@ -133,3 +133,4 @@ def create_new_tweet(tweet: dict) -> Union[PoliceTweets,
                 longitude=longitude,
                 latitude=latitude
            )
+
