@@ -1,3 +1,5 @@
+import json
+
 from sqlalchemy import (
     Column,
     String,
@@ -7,6 +9,22 @@ from sqlalchemy import (
 )
 
 from db.database import Base, engine
+
+
+def get_geojson(id: int, text: str, created_at: DateTime, 
+                latitude: Float, longitude: Float) -> json:
+    geojson = {"type": "Feature"}
+    geojson["properties"] = {
+        "id": id,
+        "created_at": created_at.strftime("%d/%m/%Y, %H:%M:%S"),
+        "text": text
+    }
+    geojson["geometry"] = {
+        "type": "Point",
+        "coordinates": [latitude, longitude]
+    }
+    return json.dumps(geojson)
+
 
 
 class PyrosvestikiTweets(Base):
@@ -27,25 +45,8 @@ class PyrosvestikiTweets(Base):
         self.longitude = longitude
 
     def __repr__(self):
-        return """
-        {"type": "Feature",
-        "properties": {
-            "id": %s, 
-            "created_at": "%s",
-            "text": "%s"
-            },
-        "geometry": {
-            "type": "Point",
-            "coordinates": [%s, %s]
-            }
-        }
-        """ % (
-            self.id,
-            self.created_at.strftime("%d/%m/%Y, %H:%M:%S"),
-            self.text,
-            self.latitude, 
-            self.longitude
-        )
+        return get_geojson(self.id, self.text, self.created_at, self.latitude, 
+                           self.longitude)
 
 
 class PoliceTweets(Base):
@@ -66,24 +67,8 @@ class PoliceTweets(Base):
         self.longitude = longitude
 
     def __repr__(self):
-        return """
-        {"type": "Feature",
-        "properties": {
-            "id": %s, 
-            "created_at": "%s"
-            },
-        "geometry": {
-            "type": "Point",
-            "coordinates": [%s, %s]
-            }
-        }
-        """ % (
-            self.id,
-            self.created_at.strftime("%d/%m/%Y, %H:%M:%S"),
-            # self.text,
-            self.latitude, 
-            self.longitude
-        )
+        return get_geojson(self.id, self.text, self.created_at, self.latitude, 
+                           self.longitude)
 
 
 def create_DB_tables():
