@@ -5,7 +5,9 @@ from datetime import datetime
 import pandas as pd
 
 from db.database import db_session
+from db.crud import str2department
 from operations.core import remove_links_emojis
+from operations.core import find_woi_in_text, calc_location, remove_links_emojis
 
 
 def db_to_excel(departmentTable, file: str, sheet_name: str = None,
@@ -36,10 +38,9 @@ def db_to_excel(departmentTable, file: str, sheet_name: str = None,
     tweet_df.to_excel(writer, sheet_name)
     writer.save()
     
+    return None
     
-    print('debug point')
-
-
+    
 def json_to_database(departmentTable, file: str):
     f = open('../pyrosvestiki2.json')
     data = json.load(f)
@@ -72,4 +73,21 @@ def json_to_database(departmentTable, file: str):
             print(
                 f"The {new_tweet.__tablename__} tweet with id {new_tweet.id} already exists in DB!"
             )
-            
+
+
+def update_tweet_locations(department: str):
+    """
+    Update the current tweets' latitudes, longitudes based on the woi 
+    calculcation and geocoder
+    """
+    departmentTable = str2department(department=department)
+
+    with db_session() as session:
+        rows = session.query(departmentTable).all()
+
+        for tweet in rows:
+            tweet.latitude, tweet.longitude = calc_location(
+                find_woi_in_text(remove_links_emojis(tweet.text))
+            )
+        
+        session.commit()

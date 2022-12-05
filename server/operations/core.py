@@ -3,25 +3,57 @@ import re
 from typing import Any
 
 import geocoder
-import pandas as pd 
+
 
 default_pattern = re.compile((
-"(?:(?:νότιας )|(?:βόρειας )|(?:ανατολικής )|(?:δυτικής )|"
-"(?:στην? Λ. )|(?:λεωφόρο )|(?:[ν|Ν]ομού )|(?:στο κέντρο της )|(?:κέντρου? )|"
-"(?:νήσου )|(?:λίμνη )|(?:Π.Υ. )|(?:(?:της )? Π.Ε. )|"
-"(?:επί της )|(?:επί της οδού )|(?:στην οδό )|(?:οδού )|"
-"(?:στην? περιοχή )|(?:περιοχής της )|"
-"(?:στον? δήμο )|(?:(?:του )?δήμου )?|"
-"(?:στην? )|(?:στα )|(?:στους )|(?:στον? )|"
-"(?:(?:του|της ))|"
-"(?:(?:δημοτική )?(?:κοινότητα|ενότητα) ))"
-"(?:(?:[Α-ΩΆΈΊΎΏΉΌ]|(?:\d+))[α-ωάέύίόώήϊΐϋ.]+\s?)+"), flags=re.I)
+"(\\b(επάνω |"
+"νότιας |βόρειας |ανατολικής |δυτικής |"
+"λεωφόρο |[ν|Ν]ομού |νομούς.* και |νομών.* και |στο κέντρο (?:της|του )?|"
+"νήσου |λίμνη |Π.Υ. |Π.Ε. |Δ.Ε. |Ε.Ο. |"
+"|στην οδό |οδού |οδών.*και |δασάκι |"
+"περιοχής? |περιοχής? της |στον? δήμο (?:του|της )?|(?:του )?δήμου |"
+"(?:δημοτική )?(?:κοινότητα|ενότητα) |"
+"στην? |στον? |στα |στους |στις |του |της |το |την? )"
+"((?:[Α-ΩΆΈΊΎΏΉΌ][α-ωάέύίόώήϊΐϋ]{0,1}\.\s)+|"
+"(?:[Α-ΩΆΈΊΎΏΉΌ0-9]{1,2}[α-ωάέύίόώήϊΐϋ]{2,}\s?)+)+)"
+))
+
+
+def find_woi_in_text(text: str, pattern: re.compile = default_pattern)\
+    -> str:
+    """
+    Given an input text returns key phrases containing location information. The
+    search is based on regular expression matching.
+
+    Parameters
+    ----------
+    text: str
+        The input text.
+    
+    Returns
+    ---------- 
+    words of interest: str
+        Key phrases/words that contain location information. These are 
+        joined by spaces. If nothing is found returns an empty string.
+    """
+
+    m = re.findall(pattern=pattern, string=text)
+    if m: 
+        woi = " ".join([(match[0].strip()) for
+                         match in m if match[1]!=""])
+        return re.sub(pattern=re.compile((
+                        "επί |της |του? |στον? |στην? |στα |στους |την? |"
+                        "Πυροσβεστικού Σώματος\s?|Πολεμικής Αεροπορίας\s?")),
+                      repl= "",
+                      string=woi).strip()
+    else:
+        return ''
 
 
 def calc_location(text: str) -> str:
     """
-    Gets the tweet's plain text and returns the location as WKT 
-    (POINT(lng lat)).
+    Gets a text including words or phrases describing geographic locations 
+    (words of interest) and returns the latitude, longitude from the geocoder.
 
     Parameters
     ----------
@@ -33,11 +65,7 @@ def calc_location(text: str) -> str:
     location : str
         The geolocation as WKT (Well known text).
     """
-
-    # TODO: Have to find better way to extract location!
-    capital_words = get_capital_words(text)
-
-    geo = geocoder.osm(capital_words)
+    geo = geocoder.osm(text)
     # The tween has to be inside Greece!
     if geo.country_code == "gr":
         # add a slight randomness to the location to avoid two markers on leaflet to overlap 100%
@@ -90,31 +118,6 @@ def format_text(text: str) -> str:
     formatted_text = " ".join(text_list)
 
     return formatted_text
-
-
-def find_woi_in_text(text: str, pattern: re.compile = default_pattern)\
-    -> str:
-    """
-    Given an input text returns key phrases containing location information. The
-    search is based on regular expression matching.
-
-    Parameters
-    ----------
-    text: str
-        The input text.
-    
-    Returns
-    ---------- 
-    words of interest: str
-        Key phrases/words that contain location information. These are 
-        joined by spaces. If nothing is found returns an empty string.
-    """
-
-    m = re.findall(pattern=pattern, string=text)
-    if m:
-        return " ".join([match.rstrip() for match in m])
-    else:
-        return ''
 
 
 def get_capital_words(text: str) -> str:

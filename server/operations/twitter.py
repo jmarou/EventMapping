@@ -46,8 +46,9 @@ def download_tweets(account_id: int, max_results: int=100) -> List:
 
     Returns
     ----------
-    r.json : dict
-        A python dictionary with the response from twitter API v2.
+    r_data : List[dict]
+        A list containing python dictionaries with the response from twitter
+        API v2.
     """
     parameters = DEFAULT_TWEET_PARAMETERS
     r_data = []

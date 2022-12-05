@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 
 from sqlalchemy import (
     Column,
@@ -11,7 +12,7 @@ from sqlalchemy import (
 from db.database import Base, engine
 
 
-def get_geojson(id: int, text: str, created_at: DateTime, 
+def get_geojson(id: int, text: str, created_at: datetime, 
                 latitude: Float, longitude: Float) -> json:
     geojson = {"type": "Feature"}
     geojson["properties"] = {
@@ -24,7 +25,6 @@ def get_geojson(id: int, text: str, created_at: DateTime,
         "coordinates": [latitude, longitude]
     }
     return json.dumps(geojson)
-
 
 
 class PyrosvestikiTweets(Base):
