@@ -5,7 +5,7 @@ from typing import Any
 import geocoder
 
 
-default_pattern = re.compile((
+DEFAULT_PATTERN = re.compile((
 "(\\b(επάνω |"
 "νότιας |βόρειας |ανατολικής |δυτικής |"
 "λεωφόρο |[ν|Ν]ομού |νομούς.* και |νομών.* και |στο κέντρο (?:της|του )?|"
@@ -19,7 +19,7 @@ default_pattern = re.compile((
 ))
 
 
-def find_woi_in_text(text: str, pattern: re.compile = default_pattern)\
+def find_woi_in_text(text: str, pattern: re.compile = DEFAULT_PATTERN)\
     -> str:
     """
     Given an input text returns key phrases containing location information. The
