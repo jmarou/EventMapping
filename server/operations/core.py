@@ -1,9 +1,12 @@
-import random
+import os 
 import re
-from typing import Any
+from typing import Any, Union, List
 
 import geocoder
+import geograpy 
+from deepl import Translator
 
+from tokens import DEEPL_TOKEN
 
 DEFAULT_PATTERN = re.compile((
 "(\\b(επάνω |"
@@ -17,6 +20,8 @@ DEFAULT_PATTERN = re.compile((
 "((?:[Α-ΩΆΈΊΎΏΉΌ][α-ωάέύίόώήϊΐϋ]{0,1}\.\s)+|"
 "(?:[Α-ΩΆΈΊΎΏΉΌ0-9]{1,2}[α-ωάέύίόώήϊΐϋ]{2,}\s?)+)+)"
 ))
+
+translator = Translator(auth_key=DEEPL_TOKEN, skip_language_check=True)
 
 
 def find_woi_in_text(text: str, pattern: re.compile = DEFAULT_PATTERN)\
@@ -48,6 +53,25 @@ def find_woi_in_text(text: str, pattern: re.compile = DEFAULT_PATTERN)\
                       string=woi).strip()
     else:
         return ''
+
+
+def translate_text(text: str) -> str:
+    """
+    Gets the text of the tweet (greek) and translates it to english
+    using the deepL API.
+
+    Parameters
+    ----------
+    text: str
+        The input text.
+    
+    Returns
+    ---------- 
+    _: str
+        The translated in english tweet text.
+    """
+    return translator.translate_text(text=text, source_lang='EL',
+                                     target_lang='EN-US')
 
 
 def calc_location(text: str) -> str:
@@ -168,3 +192,24 @@ def remove_links_emojis(text):
     text = re.sub("https?://.*", '', text)
     # remove anything that is not word, whitespace, comma or period (emojis)
     return re.sub(r'[^\w\s,.]', '', text)  
+
+
+def geograpy_woi(text: str) -> Union[List[str], None]:
+    """
+    Taken a translated (in english) tweet text, returns the words containing
+    location information using the geograpy3 library.
+
+    Parameters
+    ----------
+    text: str
+        The input text already translated to english. Geograpy3 doesn't support
+        the greek language.
+    
+    Returns
+    ---------- 
+    words of interest: str
+        Key phrases/words that contain location information. These are 
+        joined by spaces. If nothing is found returns an empty string.
+    """
+    extractor = geograpy.extraction.Extractor(text=text)
+    return extractor.find_geoEntities()

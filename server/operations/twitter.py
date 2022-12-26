@@ -3,10 +3,7 @@ import requests
 from datetime import datetime
 from typing import List
 
-# token for twitter API
-# TWITTER_TOKEN = os.getenv("TOKEN")
-with open(r'/home/john/EventMapping/server/token.txt', 'r') as f:
-    TWITTER_TOKEN = f.read()
+from tokens import TWITTER_TOKEN
 
 # account ids given by twitter to user accounts
 ACCOUNT_IDS = {

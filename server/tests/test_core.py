@@ -1,7 +1,8 @@
 import unittest
 
 from operations.core import (
-    remove_links_emojis
+    remove_links_emojis,
+    translate_text
 )
 
 class testOperationsCore(unittest.TestCase):  
@@ -21,6 +22,11 @@ class testOperationsCore(unittest.TestCase):
         'Επιχειρούν 6 πυροσβέστες με 2 οχήματα.'
         self.assertEqual(expected_text1, remove_links_emojis(self.tweet1))
         self.assertEqual(expected_text2, remove_links_emojis(self.tweet2))
+
+    def test_translate_text(self):
+        text = self.tweet2.split('.')[0]
+        translated_text = 'Operation to rescue a person from a train in Kryoneri, Attica'
+        self.assertEqual(translate_text(text).text, translated_text)
 
 
 if __name__ == '__main__':
