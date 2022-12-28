@@ -2,7 +2,8 @@ import unittest
 
 from operations.core import (
     remove_links_emojis,
-    translate_text
+    translate_text,
+    geograpy_woi
 )
 
 class testOperationsCore(unittest.TestCase):  
@@ -13,7 +14,7 @@ class testOperationsCore(unittest.TestCase):
         self.tweet2 = 'Σε εξέλιξη επιχείρηση ανάσυρσης ατόμου από αμαξοστοιχία τρένου στο Κρυονέρι Αττικής.'\
         '🚒🚒Επιχειρούν 6 <a href="https://twitter.com/hashtag/πυροσβέστες">#πυροσβέστες</a> με 2 οχήματα.'\
         '<a href="https://t.co/5JSKRCC7Bt">https://t.co/5JSKRCC7Bt</a>'
-
+        self.translated1 = 'Operation to rescue a person from a train in Kryoneri, Attica'
 
     def test_remove_links_emojis(self):
         expected_text1 = 'Κατεσβέσθη πυρκαγιά σε κεραμοσκεπή οικίας, στο δήμο Κατερίνης Πιερίας.'\
@@ -25,8 +26,11 @@ class testOperationsCore(unittest.TestCase):
 
     def test_translate_text(self):
         text = self.tweet2.split('.')[0]
-        translated_text = 'Operation to rescue a person from a train in Kryoneri, Attica'
-        self.assertEqual(translate_text(text).text, translated_text)
+        self.assertEqual(translate_text(text).text, self.translated1)
+
+    def test_geograpy_woi(self):
+        self.assertEqual(geograpy_woi(self.translated1), 'Kryoneri')
+
 
 
 if __name__ == '__main__':
