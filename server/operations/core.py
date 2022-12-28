@@ -149,7 +149,7 @@ def format_text(text: str) -> str:
 def get_capital_words(text: str) -> str:
     """
     Extracts only the capital words for text written in Greek and returns them 
-    as comma separated string.
+    as space separated string.
 
     Parameters
     ----------
@@ -159,15 +159,13 @@ def get_capital_words(text: str) -> str:
     Returns
     ----------
     capital_words: str
-        Comma separated capital words.
+        Space separated capital words.
     """
-    capital_words = ""
-    for word in text.split()[1:]:
-        unicode = ord(word[0])
-        if unicode >= 913 and unicode <= 937:
-            capital_words = word + ","
+    capital_words = re.findall(pattern='[Α-ΩΆΈΊΎΏΉΌ][α-ωάέύίόώήϊΐϋ]+', string=text)
+    if capital_words: 
+        return " ".join([word for word in capital_words[1:]])
+    return ""    
     
-    return capital_words
   
 
 def remove_links_emojis(text):

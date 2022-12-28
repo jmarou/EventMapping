@@ -1,9 +1,8 @@
 import unittest
 
 from operations.core import (
-    remove_links_emojis,
-    translate_text,
-    geograpy_woi
+    remove_links_emojis, translate_text,
+    geograpy_woi, get_capital_words
 )
 
 class testOperationsCore(unittest.TestCase):  
@@ -14,23 +13,26 @@ class testOperationsCore(unittest.TestCase):
         self.tweet2 = 'Σε εξέλιξη επιχείρηση ανάσυρσης ατόμου από αμαξοστοιχία τρένου στο Κρυονέρι Αττικής.'\
         '🚒🚒Επιχειρούν 6 <a href="https://twitter.com/hashtag/πυροσβέστες">#πυροσβέστες</a> με 2 οχήματα.'\
         '<a href="https://t.co/5JSKRCC7Bt">https://t.co/5JSKRCC7Bt</a>'
-        self.translated1 = 'Operation to rescue a person from a train in Kryoneri, Attica'
-
-    def test_remove_links_emojis(self):
-        expected_text1 = 'Κατεσβέσθη πυρκαγιά σε κεραμοσκεπή οικίας, στο δήμο Κατερίνης Πιερίας.'\
+        self.free_text1 = 'Κατεσβέσθη πυρκαγιά σε κεραμοσκεπή οικίας, στο δήμο Κατερίνης Πιερίας.'\
         'Επιχείρησαν 15 πυροσβέστες με 5 οχήματα.'
-        expected_text2 = 'Σε εξέλιξη επιχείρηση ανάσυρσης ατόμου από αμαξοστοιχία τρένου στο Κρυονέρι Αττικής.'\
+        self.freee_text2 = 'Σε εξέλιξη επιχείρηση ανάσυρσης ατόμου από αμαξοστοιχία τρένου στο Κρυονέρι Αττικής.'\
         'Επιχειρούν 6 πυροσβέστες με 2 οχήματα.'
-        self.assertEqual(expected_text1, remove_links_emojis(self.tweet1))
-        self.assertEqual(expected_text2, remove_links_emojis(self.tweet2))
+        self.translated1 = 'Operation to rescue a person from a train in Kryoneri, Attica'
+    
+    def test_remove_links_emojis(self):
+        self.assertEqual(remove_links_emojis(self.tweet1), self.free_text1)
+        self.assertEqual(remove_links_emojis(self.tweet2), self.freee_text2)
+        self.assertEqual(remove_links_emojis(""), "")
 
-    def test_translate_text(self):
-        text = self.tweet2.split('.')[0]
-        self.assertEqual(translate_text(text), self.translated1)
+    # def test_translate_text(self):
+    #     text = self.tweet2.split('.')[0]
+    #     self.assertEqual(translate_text(text), self.translated1)
 
     def test_geograpy_woi(self):
         self.assertEqual(geograpy_woi(self.translated1), 'Kryoneri')
 
+    def test_get_capital_words(self):
+        self.assertEqual(get_capital_words(self.free_text1), 'Κατερίνης Πιερίας Επιχείρησαν')
 
 
 if __name__ == '__main__':
