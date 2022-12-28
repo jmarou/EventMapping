@@ -70,8 +70,10 @@ def translate_text(text: str) -> str:
     _: str
         The translated in english tweet text.
     """
+    if text == "":
+        return ""
     return translator.translate_text(text=text, source_lang='EL',
-                                     target_lang='EN-US')
+                                     target_lang='EN-US').text
 
 
 def calc_location(text: str) -> str:
@@ -194,7 +196,7 @@ def remove_links_emojis(text):
     return re.sub(r'[^\w\s,.]', '', text)  
 
 
-def geograpy_woi(text: str) -> Union[List[str], None]:
+def geograpy_woi(text: str) -> str:
     """
     Taken a translated (in english) tweet text, returns the words containing
     location information using the geograpy3 library.
@@ -211,5 +213,11 @@ def geograpy_woi(text: str) -> Union[List[str], None]:
         Key phrases/words that contain location information. These are 
         joined by spaces. If nothing is found returns an empty string.
     """
+    if text == "":
+        return ""
     extractor = geograpy.extraction.Extractor(text=text)
-    return extractor.find_geoEntities()
+    wois = extractor.find_geoEntities()
+    if wois == []:
+        return ""
+
+    return ", ".join(wois)

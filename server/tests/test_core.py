@@ -26,7 +26,7 @@ class testOperationsCore(unittest.TestCase):
 
     def test_translate_text(self):
         text = self.tweet2.split('.')[0]
-        self.assertEqual(translate_text(text).text, self.translated1)
+        self.assertEqual(translate_text(text), self.translated1)
 
     def test_geograpy_woi(self):
         self.assertEqual(geograpy_woi(self.translated1), 'Kryoneri')
