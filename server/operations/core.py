@@ -169,18 +169,19 @@ def get_capital_words(text: str) -> str:
   
 
 def remove_links_emojis(text):
-    """Gets the tweet's plain text and returns the same texting without the html 
-    links (<a href=url></a>) and without hashtags.
+    """
+    Gets the tweet's plain text and returns the same texting without the html
+    links (<a href=url></a>), hashtags (#) and emojis
 
     Parameters
     ----------
     text : str
-        The input text.
+        The input text (rich format)
 
     Returns
     ----------
     formatted_text : str
-        The tweet text wihtout html links and/or hashtags.
+        The tweet text wihtout html links, hashtags and emojis
     """
     # TODO: Optimize this function for better regex!
     # remove the href links
@@ -191,7 +192,9 @@ def remove_links_emojis(text):
     # remove any remaining links from the text
     text = re.sub("https?://.*", '', text)
     # remove anything that is not word, whitespace, comma or period (emojis)
-    return re.sub(r'[^\w\s,.]', '', text)  
+    text = re.sub(r'[^\w\s,.]', '', text)
+    # replace double (or more) spaces with single space
+    return re.sub(r'\s{2,}', ' ', text)
 
 
 def geograpy_woi(text: str) -> str:
