@@ -29,15 +29,15 @@ class testOperationsCore(unittest.TestCase):
         self.assertEqual(remove_links_emojis(self.tweet3), self.free_text3)
         self.assertEqual(remove_links_emojis(""), "")
 
-    # def test_translate_text(self):
-    #     text = self.tweet2.split('.')[0]
-    #     self.assertEqual(translate_text(text), self.translated1)
+    def test_translate_text(self):
+        text = self.tweet2.split('.')[0]
+        self.assertEqual(translate_text(text), self.translated1)
 
-    # def test_geograpy_woi(self):
-    #     self.assertEqual(geograpy_woi(self.translated1), 'Kryoneri')
+    def test_geograpy_woi(self):
+        self.assertEqual(geograpy_woi(self.translated1), 'Kryoneri')
 
-    # def test_get_capital_words(self):
-    #     self.assertEqual(get_capital_words(self.free_text1), 'Κατερίνης Πιερίας Επιχείρησαν')
+    def test_get_capital_words(self):
+        self.assertEqual(get_capital_words(self.free_text1), 'Κατερίνης Πιερίας Επιχείρησαν')
 
 
 if __name__ == '__main__':
