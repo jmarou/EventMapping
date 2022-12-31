@@ -9,7 +9,7 @@ from db.database import db_session
 from db.crud import str2department
 from operations.core import (find_woi_in_text, calc_location, 
     remove_links_emojis, get_capital_words, translate_text,
-    geograpy_woi)
+    geograpy_woi, categorize_tweet)
 
 
 def db_to_excel(department: str, file: str, sheet_name: str = None,
@@ -119,17 +119,55 @@ def json_to_database(departmentTable, file: str):
 
 def update_tweet_locations(department: str):
     """
-    Update the current tweets' latitudes, longitudes based on the woi 
-    calculcation and geocoder
+    Update/calcualte the latitude, longitude based on the woi 
+    calculcation and geocoder for all the saved tweets.
     """
     departmentTable = str2department(department=department)
 
     with db_session() as session:
-        rows = session.query(departmentTable).all()
+        tweets = session.query(departmentTable).all()
 
-        for tweet in rows:
+        for tweet in tweets:
             tweet.latitude, tweet.longitude = calc_location(
                 find_woi_in_text(remove_links_emojis(tweet.text))
             )
+        
+        session.commit()
+
+
+def update_tweet_categories(department: str):
+    """
+    Update/calculate the category for all the saved tweets.
+    """
+    departmentTable = str2department(department=department)
+
+    with db_session() as session:
+        all_tweets = session.query(departmentTable).all()
+
+        count = 0
+        all_count = len(all_tweets)
+        for tweet in all_tweets:
+            count+= 1
+            print(f'{count/all_count * 100}%')
+            tweet.category = categorize_tweet(tweet.plain_text, department)
+
+        session.commit()
+
+
+def upadte_tweet_plain_text(department: str):
+    """
+    Update/calculate the plain text for all the saved tweets.
+    """
+    departmentTable = str2department(department)
+
+    with db_session() as session:
+        all_tweets = session.query(departmentTable).all()
+
+        count = 0
+        all_count = len(all_tweets)
+        for tweet in all_tweets:
+                count+= 1
+                print(f'{count/all_count * 100}%')
+                tweet.plain_text = remove_links_emojis(tweet.text)
         
         session.commit()
