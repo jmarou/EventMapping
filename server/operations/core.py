@@ -1,6 +1,6 @@
 import os 
 import re
-from typing import Any, Union, List
+from typing import Any
 
 import geocoder
 import geograpy 
@@ -192,7 +192,7 @@ def remove_links_emojis(text):
     # remove any remaining links from the text
     text = re.sub("https?://.*", '', text)
     # remove anything that is not word, whitespace, comma or period (emojis)
-    text = re.sub(r'[^\w\s,.]', '', text)
+    text = re.sub(r'[^\w\s,.]', ' ', text)
     # replace double (or more) spaces with single space
     return re.sub(r'\s{2,}', ' ', text)
 
@@ -222,3 +222,50 @@ def geograpy_woi(text: str) -> str:
         return ""
 
     return ", ".join(wois)
+
+
+def categorize_tweet(plain_text: str, department: str) -> int:
+    """
+    Takes the plain text (no links, hashtags or emojis) of a tweet
+    and returns an integer based on the category map.
+
+    Parameters
+    ----------
+    plain_text: str
+       The plain text (no links, hashtags or emojis) of a tweet.
+    department: str
+        The name of the department the tweet comes from. 'Pyrosvestiki'
+        or 'Police'.
+
+    Returns
+    ---------- 
+    category: int
+        An integer representing the category of the tweet.
+    """
+    plain_text = plain_text.lower()
+    if department.lower() == 'pyrosvestiki':
+        if re.search('ανάσυρσης?|ανασύρθηκ(?:ε|αν)', plain_text):
+            return 1
+        elif re.search('απεγκλωβίστηκ(?:ε|αν)|απεγκλωβισμός?|μεταφορά|μεταφέρθηκ(?:ε|αν)',
+                      plain_text):
+            return 2
+        elif re.search('εντοπίστηκ(?:ε|αν)|εντοπισμός?|διασώθηκ(?:ε|αν)|αεροδιακομιδή', plain_text):
+            return 3
+        elif re.search('κατάσβεσης?|κατεσβέσθη|κατασβέσθη', plain_text):
+            return 4
+        elif re.search('πυρκαγιά|στην? πυρκαγιά|υπό (?:μερικό|πλήρη )?έλεγχο',
+                      plain_text):
+            return 5
+        elif re.search('έρευνας? και διάσωσης?|επιχείρησης?|επιχειρούν|επιχείρησαν',
+                       plain_text):
+            return 6
+        elif re.search('τελευταίο 24ωρο', plain_text):
+            return 7
+        elif re.search('δελτίο τύπου', plain_text):
+            return 8
+        else:
+            return 0
+    elif department.lower() == 'police':
+        pass
+    else:
+        raise ValueError
