@@ -71,6 +71,7 @@ def save_tweets(tweet: Union[dict, List]) -> None:
     ----------
     None
     """
+    # if only one tweet, create a list with 1 tweet in it
     if isinstance(tweet, dict):
         tweets = [tweet]
 
