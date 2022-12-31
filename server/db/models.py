@@ -35,7 +35,7 @@ class PyrosvestikiTweets(Base):
     id = Column("id", BIGINT, primary_key=True)
     text = Column("text", String)
     created_at = Column("created_at", DateTime)
-    free_text = Column("free_text", String)
+    plain_text = Column("plain_text", String)
     category = Column("category", INTEGER)
     translated_text = Column("translated_text", String)
     regex_woi = Column("regex_woi", String)
@@ -44,13 +44,13 @@ class PyrosvestikiTweets(Base):
     latitude = Column("latitude", Float)
     longitude = Column("longitude", Float)
 
-    def __init__(self, id, text, created_at, free_text, category, 
+    def __init__(self, id, text, created_at, plain_text, category, 
                 translated_text, regex_woi, capital_words, 
                 geograpy_woi, latitude=None, longitude=None): 
         self.id = id
         self.text = text
         self.created_at = created_at
-        self.free_text = free_text
+        self.plain_text = plain_text
         self.category = category
         self.translated_text = translated_text
         self.regex_woi = regex_woi
@@ -71,7 +71,7 @@ class PoliceTweets(Base):
     id = Column("id", BIGINT, primary_key=True)
     text = Column("text", String)
     created_at = Column("created_at", DateTime)
-    free_text = Column("free_text", String)
+    plain_text = Column("plain_text", String)
     category = Column("category", INTEGER)
     translated_text = Column("translated_text", String)
     regex_woi = Column("regex_woi", String)
@@ -80,13 +80,13 @@ class PoliceTweets(Base):
     latitude = Column("latitude", Float)
     longitude = Column("longitude", Float)
 
-    def __init__(self, id, text, created_at, free_text, category, 
+    def __init__(self, id, text, created_at, plain_text, category, 
                 translated_text, regex_woi, capital_words, 
                 geograpy_woi, latitude=None, longitude=None): 
         self.id = id
         self.text = text
         self.created_at = created_at
-        self.free_text = free_text
+        self.plain_text = plain_text
         self.category = category
         self.translated_text = translated_text
         self.regex_woi = regex_woi
