@@ -117,25 +117,7 @@ def json_to_database(departmentTable, file: str):
             )
 
 
-def update_tweet_locations(department: str):
-    """
-    Update/calcualte the latitude, longitude based on the woi 
-    calculcation and geocoder for all the saved tweets.
-    """
-    departmentTable = str2department(department=department)
-
-    with db_session() as session:
-        tweets = session.query(departmentTable).all()
-
-        for tweet in tweets:
-            tweet.latitude, tweet.longitude = calc_location(
-                find_woi_in_text(remove_links_emojis(tweet.text))
-            )
-        
-        session.commit()
-
-
-def update_tweet_categories(department: str):
+def update_tweets_category(department: str) -> None:
     """
     Update/calculate the category for all the saved tweets.
     """
@@ -154,7 +136,7 @@ def update_tweet_categories(department: str):
         session.commit()
 
 
-def upadte_tweet_plain_text(department: str):
+def update_tweets_plain_text(department: str) -> None:
     """
     Update/calculate the plain text for all the saved tweets.
     """
@@ -171,3 +153,88 @@ def upadte_tweet_plain_text(department: str):
                 tweet.plain_text = remove_links_emojis(tweet.text)
         
         session.commit()
+
+
+def update_tweets_regex_woi(department: str) -> None:
+    """
+    Update/calculate the regex_woi for all the tweets with eligible 
+    category representing an event, based on categorize_tweet function.
+    """
+    departmentTable = str2department(department)
+
+    with db_session() as session:
+        all_tweets = session.query(departmentTable).where(
+            departmentTable.category>=0)
+
+        count = 0
+        all_count = all_tweets.count()
+        for tweet in all_tweets:
+                count += 1
+                print(f'{count/all_count * 100}%')
+                tweet.regex_woi = find_woi_in_text(tweet.plain_text)
+        
+        session.commit()
+
+
+def update_tweets_capital_words(department: str) -> None:
+    """
+    Update/calculate the capital_words for all the tweets with eligible
+    category representing an event, based on the categorize_tweet function.
+    """
+    departmentTable = str2department(department)
+    
+    with db_session() as session:
+        all_tweets = session.query(departmentTable).where(
+            departmentTable.category>=0)
+
+        count = 0
+        all_count = all_tweets.count()
+        for tweet in all_tweets:
+            count += 1
+            print(f'{count} / {all_count}')
+            tweet.capital_words = get_capital_words(tweet.plain_text)
+        
+        session.commit()
+
+
+def update_tweets_translated_text(department: str) -> None:
+    """
+    Update/calculate the translated_text for all the tweets with eligible 
+    category representing an event, based on categorize_tweet function.
+    """
+    departmentTable = str2department(department)
+
+    with db_session() as session:
+        all_tweets = session.query(departmentTable).where(
+            departmentTable.category>=0)
+
+        count = 0
+        all_count = all_tweets.count()
+        for tweet in all_tweets:
+                count += 1
+                print(f'{count} / {all_count}')
+                tweet.translated_text = translate_text(tweet.plain_text)
+        
+        session.commit()
+
+
+def update_tweets_location(department: str) -> None:
+    """
+    Update/calculate the regex_woi for all the tweets with eligible 
+    category representing an event, based on categorize_tweet function.
+    """
+    departmentTable = str2department(department)
+
+    with db_session() as session:
+        all_tweets = session.query(departmentTable).where(
+            departmentTable.regex_woi!=None)
+
+        count = 0
+        all_count = all_tweets.count()
+        for tweet in all_tweets:
+                count += 1
+                print(f'{count} / {all_count}')
+                tweet.longitude, tweet.latitude = calc_location(tweet.regex_woi)
+                session.commit()
+        
+        # session.commit()

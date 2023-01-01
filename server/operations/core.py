@@ -24,11 +24,10 @@ DEFAULT_PATTERN = re.compile((
 translator = Translator(auth_key=DEEPL_TOKEN, skip_language_check=True)
 
 
-def find_woi_in_text(text: str, pattern: re.compile = DEFAULT_PATTERN)\
-    -> str:
+def find_woi_in_text(text: str, pattern: re.compile = DEFAULT_PATTERN) -> str:
     """
-    Given an input text returns key phrases containing location information. The
-    search is based on regular expression matching.
+    Given an input text returns key phrases containing location information. 
+    The search is based on regular expression matching.
 
     Parameters
     ----------
@@ -48,7 +47,8 @@ def find_woi_in_text(text: str, pattern: re.compile = DEFAULT_PATTERN)\
                          match in m if match[1]!=""])
         return re.sub(pattern=re.compile((
                         "επί |της |του? |στον? |στην? |στα |στους |την? |"
-                        "Πυροσβεστικού Σώματος\s?|Πολεμικής Αεροπορίας\s?")),
+                        "Πυροσβεστικού Σώματος\s?|Πολεμικής Αεροπορίας\s?|"
+                        "Ομάδας?|Διώξης?|")),
                       repl= "",
                       string=woi).strip()
     else:
@@ -183,18 +183,14 @@ def remove_links_emojis(text):
     formatted_text : str
         The tweet text wihtout html links, hashtags and emojis
     """
-    # TODO: Optimize this function for better regex!
-    # remove the href links
-    text = re.sub(r'<a href=[\'"]?[^>]+>', '', text)
-    text = re.sub(r'</a>', '', text)
-    # remove hashtags
-    text = re.sub('#', '', text)
-    # remove any remaining links from the text
-    text = re.sub("https?://.*", '', text)
+    # REMOVE ALL LINKS AND HASHTAGS
+    text = re.sub(r'(<a href="https?://[\w\.\/]*">#?)|(https?://[\w\/\.]*</a>)|(</a>)', "", text)
+    # place period when missing before newline character
+    text = re.sub(r' *?\.?\n', '.\n', text)
     # remove anything that is not word, whitespace, comma or period (emojis)
     text = re.sub(r'[^\w\s,.]', ' ', text)
     # replace double (or more) spaces with single space
-    return re.sub(r'\s{2,}', ' ', text)
+    return re.sub(r' {2,}', ' ', text)
 
 
 def geograpy_woi(text: str) -> str:
@@ -245,27 +241,40 @@ def categorize_tweet(plain_text: str, department: str) -> int:
     plain_text = plain_text.lower()
     if department.lower() == 'pyrosvestiki':
         if re.search('ανάσυρσης?|ανασύρθηκ(?:ε|αν)', plain_text):
-            return 1
+            return 0
         elif re.search('απεγκλωβίστηκ(?:ε|αν)|απεγκλωβισμός?|μεταφορά|μεταφέρθηκ(?:ε|αν)',
                       plain_text):
-            return 2
+            return 1
         elif re.search('εντοπίστηκ(?:ε|αν)|εντοπισμός?|διασώθηκ(?:ε|αν)|αεροδιακομιδή', plain_text):
-            return 3
+            return 2
         elif re.search('κατάσβεσης?|κατεσβέσθη|κατασβέσθη', plain_text):
-            return 4
+            return 3
         elif re.search('πυρκαγιά|στην? πυρκαγιά|υπό (?:μερικό|πλήρη )?έλεγχο',
                       plain_text):
-            return 5
+            return 4
         elif re.search('έρευνας? και διάσωσης?|επιχείρησης?|επιχειρούν|επιχείρησαν',
                        plain_text):
-            return 6
+            return 5
         elif re.search('τελευταίο 24ωρο', plain_text):
-            return 7
+            return -1
         elif re.search('δελτίο τύπου', plain_text):
-            return 8
+            return -2
         else:
-            return 0
+            return -3
     elif department.lower() == 'police':
-        pass
+        if re.search('συνελήφθ(?:η|ησαν|ηκε)', plain_text):
+            return 0
+        elif re.search('εξιχνιάσ(?:σθηκε|στηκαν)|εξακριβώθηκε|εξαρθρώθηκε', plain_text):
+            return 1
+        elif re.search('δενξεχνάμε', plain_text):
+            return -1
+        elif re.search('σανσήμερα', plain_text):
+            return -2
+        elif re.search('κυκλοφοριακές ρυθμίσεις', plain_text):
+            return -3
+        elif re.match('RT ', plain_text):
+            return -4
+        else:
+            return -5
     else:
         raise ValueError
