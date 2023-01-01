@@ -28,7 +28,7 @@ def get_tweets_with_location(department: str) -> Any:
     with db_session() as session:
         query = session.query(departmentTable).where(
             departmentTable.latitude!=None
-        )
+        ).where(departmentTable.category>-1)
 
     return query
 
