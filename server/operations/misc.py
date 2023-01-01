@@ -9,7 +9,7 @@ from db.database import db_session
 from db.crud import str2department
 from operations.core import (find_woi_in_text, calc_location, 
     remove_links_emojis, get_capital_words, translate_text,
-    geograpy_woi)
+    geograpy_woi, categorize_tweet)
 
 
 def db_to_excel(department: str, file: str, sheet_name: str = None,
@@ -117,19 +117,124 @@ def json_to_database(departmentTable, file: str):
             )
 
 
-def update_tweet_locations(department: str):
+def update_tweets_category(department: str) -> None:
     """
-    Update the current tweets' latitudes, longitudes based on the woi 
-    calculcation and geocoder
+    Update/calculate the category for all the saved tweets.
     """
     departmentTable = str2department(department=department)
 
     with db_session() as session:
-        rows = session.query(departmentTable).all()
+        all_tweets = session.query(departmentTable).all()
 
-        for tweet in rows:
-            tweet.latitude, tweet.longitude = calc_location(
-                find_woi_in_text(remove_links_emojis(tweet.text))
-            )
+        count = 0
+        all_count = len(all_tweets)
+        for tweet in all_tweets:
+            count+= 1
+            print(f'{count/all_count * 100}%')
+            tweet.category = categorize_tweet(tweet.plain_text, department)
+
+        session.commit()
+
+
+def update_tweets_plain_text(department: str) -> None:
+    """
+    Update/calculate the plain text for all the saved tweets.
+    """
+    departmentTable = str2department(department)
+
+    with db_session() as session:
+        all_tweets = session.query(departmentTable).all()
+
+        count = 0
+        all_count = len(all_tweets)
+        for tweet in all_tweets:
+                count+= 1
+                print(f'{count/all_count * 100}%')
+                tweet.plain_text = remove_links_emojis(tweet.text)
         
         session.commit()
+
+
+def update_tweets_regex_woi(department: str) -> None:
+    """
+    Update/calculate the regex_woi for all the tweets with eligible 
+    category representing an event, based on categorize_tweet function.
+    """
+    departmentTable = str2department(department)
+
+    with db_session() as session:
+        all_tweets = session.query(departmentTable).where(
+            departmentTable.category>=0)
+
+        count = 0
+        all_count = all_tweets.count()
+        for tweet in all_tweets:
+                count += 1
+                print(f'{count/all_count * 100}%')
+                tweet.regex_woi = find_woi_in_text(tweet.plain_text)
+        
+        session.commit()
+
+
+def update_tweets_capital_words(department: str) -> None:
+    """
+    Update/calculate the capital_words for all the tweets with eligible
+    category representing an event, based on the categorize_tweet function.
+    """
+    departmentTable = str2department(department)
+    
+    with db_session() as session:
+        all_tweets = session.query(departmentTable).where(
+            departmentTable.category>=0)
+
+        count = 0
+        all_count = all_tweets.count()
+        for tweet in all_tweets:
+            count += 1
+            print(f'{count} / {all_count}')
+            tweet.capital_words = get_capital_words(tweet.plain_text)
+        
+        session.commit()
+
+
+def update_tweets_translated_text(department: str) -> None:
+    """
+    Update/calculate the translated_text for all the tweets with eligible 
+    category representing an event, based on categorize_tweet function.
+    """
+    departmentTable = str2department(department)
+
+    with db_session() as session:
+        all_tweets = session.query(departmentTable).where(
+            departmentTable.category>=0)
+
+        count = 0
+        all_count = all_tweets.count()
+        for tweet in all_tweets:
+                count += 1
+                print(f'{count} / {all_count}')
+                tweet.translated_text = translate_text(tweet.plain_text)
+        
+        session.commit()
+
+
+def update_tweets_location(department: str) -> None:
+    """
+    Update/calculate the regex_woi for all the tweets with eligible 
+    category representing an event, based on categorize_tweet function.
+    """
+    departmentTable = str2department(department)
+
+    with db_session() as session:
+        all_tweets = session.query(departmentTable).where(
+            departmentTable.regex_woi!=None)
+
+        count = 0
+        all_count = all_tweets.count()
+        for tweet in all_tweets:
+                count += 1
+                print(f'{count} / {all_count}')
+                tweet.longitude, tweet.latitude = calc_location(tweet.regex_woi)
+                session.commit()
+        
+        # session.commit()
