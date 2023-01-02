@@ -259,6 +259,8 @@ def categorize_tweet(plain_text: str, department: str) -> int:
             return -1
         elif re.search('δελτίο τύπου', plain_text):
             return -2
+        # elif re.match('RT ', plain_text):
+            # return -3
         else:
             return -3
     elif department.lower() == 'police':
