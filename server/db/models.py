@@ -41,12 +41,13 @@ class PyrosvestikiTweets(Base):
     regex_woi = Column("regex_woi", String)
     capital_words = Column("capital_words", String)
     geograpy_woi = Column("geograpy_woi", String)
+    spacy_woi = Column("spacy_woi", String)
     latitude = Column("latitude", Float)
     longitude = Column("longitude", Float)
 
     def __init__(self, id, text, created_at, plain_text, category, 
                 translated_text, regex_woi, capital_words, 
-                geograpy_woi, latitude=None, longitude=None): 
+                geograpy_woi, spacy_woi, latitude=None, longitude=None): 
         self.id = id
         self.text = text
         self.created_at = created_at
@@ -56,6 +57,7 @@ class PyrosvestikiTweets(Base):
         self.regex_woi = regex_woi
         self.capital_words = capital_words
         self.geograpy_woi = geograpy_woi
+        self.spacy_woi = spacy_woi
         self.latitude = latitude
         self.longitude = longitude
 
@@ -77,12 +79,13 @@ class PoliceTweets(Base):
     regex_woi = Column("regex_woi", String)
     capital_words = Column("capital_words", String)
     geograpy_woi = Column("geograpy_woi", String)
+    spacy_woi = Column("spacy_woi", String)
     latitude = Column("latitude", Float)
     longitude = Column("longitude", Float)
 
     def __init__(self, id, text, created_at, plain_text, category, 
                 translated_text, regex_woi, capital_words, 
-                geograpy_woi, latitude=None, longitude=None): 
+                geograpy_woi, spacy_woi, latitude=None, longitude=None): 
         self.id = id
         self.text = text
         self.created_at = created_at
@@ -92,6 +95,7 @@ class PoliceTweets(Base):
         self.regex_woi = regex_woi
         self.capital_words = capital_words
         self.geograpy_woi = geograpy_woi
+        self.spacy_woi = spacy_woi
         self.latitude = latitude
         self.longitude = longitude
 
