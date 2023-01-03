@@ -238,3 +238,24 @@ def update_tweets_location(department: str) -> None:
                 session.commit()
         
         # session.commit()
+
+
+def update_tweets_geograpy_woi(department: str) -> None:
+    """
+    Update/calcualte the regex_woi for all the tweets with eligible
+    category representing an event, based on categorize_tweet function.
+    """
+    departmentTable = str2department(department)
+
+    with db_session() as session:
+        all_tweets = session.query(departmentTable).where(
+            departmentTable.category>=0)
+
+    count = 0
+    all_count = all_tweets.count()
+    for tweet in all_tweets:
+        count += 1
+        print(f'{count} / {all_count}')
+        tweet.geograpy_woi = geograpy_woi(tweet.translated_text)
+
+    session.commit()
