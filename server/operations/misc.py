@@ -1,5 +1,6 @@
 import os
 import json
+import random
 from datetime import datetime
 
 import pandas as pd
@@ -7,13 +8,12 @@ from sqlalchemy.sql import func
 
 from db.database import db_session
 from db.crud import str2department
-from operations.core import (find_woi_in_text, calc_location, 
+from operations.core import (regex_woi, calc_location, 
     remove_links_emojis, get_capital_words, translate_text,
     geograpy_woi, categorize_tweet)
 
 
-def db_to_excel(department: str, file: str, sheet_name: str = None,
-                original: bool = False) -> None:
+def db_to_excel(department: str, file: str, sheet_name: str = None) -> None:
     """
     Reads rows from a database table and writes the result to a new sheet
     in an xlsx file. If the specified output already exists it appends the
@@ -27,9 +27,6 @@ def db_to_excel(department: str, file: str, sheet_name: str = None,
         The absolute or relative path of the output xlsx file.
     sheet_name: str
         The name of the sheet to write to.
-    original: bool
-        True if we want the original tweet text or False for text without
-        emojis and/or links.
 
     Returns
     ----------
@@ -43,36 +40,18 @@ def db_to_excel(department: str, file: str, sheet_name: str = None,
     tweet_df = pd.DataFrame()
     
     with db_session() as session:
-        # rows = session.query(departmentTable).limit(100)
-        rows = session.query(departmentTable).order_by(
-            func.random()).limit(100)
+        all_rows = session.query(departmentTable).all()
+        
+        # doesn't guarantee unique values!
+        ids = random.sample([row.id for row in all_rows], k=100)
+        rows = session.query(departmentTable).filter(departmentTable.id.in_(ids))
 
-    # tweet_df['id'] = [str(row.id) for row in rows]
-    tweet_df['original_text'] = [row.text for row in rows]
-
-    if original:
-        tweet_df['text'] = [row.text for row in rows]
-    else:
-        tweet_df['text'] = [remove_links_emojis(row.text) for row in rows]
-    
-    # tweet_df['created_at'] = [row.created_at for row in rows]
-
-    ##### Add processing values from the methods
-    # Capital words column
-    tweet_df['capital_words'] = tweet_df['text'].apply(
-        lambda text: get_capital_words(text)) 
-
-    # Regex WOI
-    tweet_df['regex_woi'] = tweet_df['text'].apply(
-        lambda text: find_woi_in_text(text))
-
-    # Translated text using deepL
-    tweet_df['translated'] = tweet_df['text'].apply(
-        lambda text: translate_text(text))
-
-    # Geograpy WOI
-    tweet_df['geograpy_woi'] = tweet_df['translated'].apply(
-        lambda translated_text: geograpy_woi(translated_text))
+    # select 100 random rows
+    # n = random.sample(range(0, len(all_rows)), 100)
+    tweet_df['text'] = [row.text for row in rows]
+    tweet_df['spacy_woi'] = [row.spacy_woi for row in rows]
+    tweet_df['regex_woi'] = [row.regex_woi for row in rows]
+    tweet_df['geograpy_woi'] = [row.geograpy_woi for row in rows]
 
     mode = 'a' if os.path.exists(file+'.xlsx') else 'w'
 
@@ -171,7 +150,7 @@ def update_tweets_regex_woi(department: str) -> None:
         for tweet in all_tweets:
                 count += 1
                 print(f'{count/all_count * 100}%')
-                tweet.regex_woi = find_woi_in_text(tweet.plain_text)
+                tweet.regex_woi = regex_woi(tweet.plain_text)
         
         session.commit()
 

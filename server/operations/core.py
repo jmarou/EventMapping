@@ -24,7 +24,7 @@ DEFAULT_PATTERN = re.compile((
 translator = Translator(auth_key=DEEPL_TOKEN, skip_language_check=True)
 
 
-def find_woi_in_text(text: str, pattern: re.compile = DEFAULT_PATTERN) -> str:
+def regex_woi(text: str, pattern: re.compile = DEFAULT_PATTERN) -> str:
     """
     Given an input text returns key phrases containing location information. 
     The search is based on regular expression matching.
