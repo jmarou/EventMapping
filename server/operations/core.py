@@ -2,31 +2,32 @@ import os
 import re
 from typing import Any
 
+from deepl import Translator
 import geocoder
 import geograpy 
-from deepl import Translator
+import spacy
 
 from tokens import DEEPL_TOKEN
 
 DEFAULT_PATTERN = re.compile((
 "(\\b(επάνω |"
 "νότιας |βόρειας |ανατολικής |δυτικής |"
-"λεωφόρο |[ν|Ν]ομού |νομούς.* και |νομών.* και |στο κέντρο (?:της|του )?|"
+"[λ|Λ]εωφόρο |[ν|Ν]ομού |νομούς.* και |νομών.* και |πλατείας? |"
 "νήσου |λίμνη |Π.Υ. |Π.Ε. |Δ.Ε. |Ε.Ο. |"
-"|στην οδό |οδού |οδών.*και |δασάκι |"
-"περιοχής? |περιοχής? της |στον? δήμο (?:του|της )?|(?:του )?δήμου |"
-"(?:δημοτική )?(?:κοινότητα|ενότητα) |"
-"στην? |στον? |στα |στους |στις |του |της |το |την? )"
+"οδό |οδού |οδών.*και |δασάκι |φαράγγι (?:του|της|των )?|"
+"περιοχής |δήμο (?:του|της )?|δήμου |"
+"(?:δημοτική )?(?:κοινότητα|ενότητα )|"
+"(?:στ[η|ο]ν? )|(?:στα )|(?:στ[ι|ου]ς )|(?:του? )|(?:τη[ς|ν]? )|(?:των ))"
 "((?:[Α-ΩΆΈΊΎΏΉΌ][α-ωάέύίόώήϊΐϋ]{0,1}\.\s)+|"
 "(?:[Α-ΩΆΈΊΎΏΉΌ0-9]{1,2}[α-ωάέύίόώήϊΐϋ]{2,}\s?)+)+)"
 ))
 
-translator = Translator(auth_key=DEEPL_TOKEN, skip_language_check=True)
+TRANSLATOR = Translator(auth_key=DEEPL_TOKEN, skip_language_check=True)
+NLP_MODEL = spacy.load("el_core_news_lg") # el_core_news_sm
 
-
-def find_woi_in_text(text: str, pattern: re.compile = DEFAULT_PATTERN) -> str:
+def regex_woi(text: str, pattern: re.compile = DEFAULT_PATTERN) -> str:
     """
-    Given an input text returns key phrases containing location information. 
+    Gets text and returns key phrases containing location information. 
     The search is based on regular expression matching.
 
     Parameters
@@ -45,14 +46,43 @@ def find_woi_in_text(text: str, pattern: re.compile = DEFAULT_PATTERN) -> str:
     if m: 
         woi = " ".join([(match[0].strip()) for
                          match in m if match[1]!=""])
-        return re.sub(pattern=re.compile((
-                        "επί |της |του? |στον? |στην? |στα |στους |την? |"
-                        "Πυροσβεστικού Σώματος\s?|Πολεμικής Αεροπορίας\s?|"
-                        "Ομάδας?|Διώξης?|")),
+                        # "επί |της |του? |στον? |στην? |στα |στους |την? |"
+        woi = re.sub(pattern=re.compile(
+                        "\\b(στ[η|ο]ν? |στα |στ[ι|ου]ς |του? |τη[ς|ν]? |των |"
+                        "περιοχής?"
+                        "Πυροσβεστικ[ού|ό]|Σώμα[τος]?|Πολεμικής?|Αεροπορίας?|"
+                        "Ομάδας?|Δίωξης?|Τμήμα(?:τος|τα)?|Ασφαλείας?|Ασφάλειας?|Ναρκωτικών|"
+                        "Διεύθυνσης?|Αστυνομικ[ό|ού|ός]|Νόμο[υ|ς]|Αστυνομίας?|Οικονομικής?)"),
                       repl= "",
                       string=woi).strip()
+        if woi.isspace():
+            return None
+        else:
+            return woi
     else:
-        return ''
+        return None
+
+
+def nlp_woi(text: str) -> str:
+    """
+    Gets text and returns key phrases containing location information. 
+    The search is based natural processing language mdoels.
+
+    Parameters
+    ----------
+    text: str
+        The input text.
+    
+    Returns
+    ---------- 
+    words of interest: str
+        Key phrases/words that contain location information. These are 
+        joined by spaces. If nothing is found returns an empty string.
+    """
+    # tokenize
+    doc = NLP_MODEL(text)
+    ents = doc.ents
+    return " ".join([entity.text for entity in ents if entity.label_=='GPE' or entity.label_=='LOC'])
 
 
 def translate_text(text: str) -> str:
@@ -72,7 +102,7 @@ def translate_text(text: str) -> str:
     """
     if text == "":
         return ""
-    return translator.translate_text(text=text, source_lang='EL',
+    return TRANSLATOR.translate_text(text=text, source_lang='EL',
                                      target_lang='EN-US').text
 
 
@@ -187,6 +217,8 @@ def remove_links_emojis(text):
     text = re.sub(r'(<a href="https?://[\w\.\/]*">#?)|(https?://[\w\/\.]*</a>)|(</a>)', "", text)
     # place period when missing before newline character
     text = re.sub(r' *?\.?\n', '.\n', text)
+    # &amp; is special symbol for '&' in html, but for plain text is not needed
+    text = re.sub(r'&amp;', 'και', text)
     # remove anything that is not word, whitespace, comma or period (emojis)
     text = re.sub(r'[^\w\s,.]', ' ', text)
     # replace double (or more) spaces with single space
@@ -240,43 +272,51 @@ def categorize_tweet(plain_text: str, department: str) -> int:
     """
     plain_text = plain_text.lower()
     if department.lower() == 'pyrosvestiki':
-        if re.search('ανάσυρσης?|ανασύρθηκ(?:ε|αν)', plain_text):
-            return 0
-        elif re.search('απεγκλωβίστηκ(?:ε|αν)|απεγκλωβισμός?|μεταφορά|μεταφέρθηκ(?:ε|αν)',
-                      plain_text):
-            return 1
-        elif re.search('εντοπίστηκ(?:ε|αν)|εντοπισμός?|διασώθηκ(?:ε|αν)|αεροδιακομιδή', plain_text):
-            return 2
-        elif re.search('κατάσβεσης?|κατεσβέσθη|κατασβέσθη', plain_text):
-            return 3
-        elif re.search('πυρκαγιά|στην? πυρκαγιά|υπό (?:μερικό|πλήρη )?έλεγχο',
-                      plain_text):
-            return 4
-        elif re.search('έρευνας? και διάσωσης?|επιχείρησης?|επιχειρούν|επιχείρησαν',
-                       plain_text):
-            return 5
-        elif re.search('τελευταίο 24ωρο', plain_text):
+        # non-mappable events (announcements, re-tweets, etc.)
+        if re.search('τελευταίο 24ωρο', plain_text):
             return -1
         elif re.search('δελτίο τύπου', plain_text):
             return -2
-        # elif re.match('RT ', plain_text):
-            # return -3
-        else:
+        elif re.match('RT ', plain_text):
             return -3
-    elif department.lower() == 'police':
-        if re.search('συνελήφθ(?:η|ησαν|ηκε)', plain_text):
-            return 0
-        elif re.search('εξιχνιάσ(?:σθηκε|στηκαν)|εξακριβώθηκε|εξαρθρώθηκε', plain_text):
+        
+        # mappable events (fire, rescue, transportation, operations)
+        elif re.search('κατάσβεσης?|κατεσβέσθη|κατασβέσθη', plain_text):
             return 1
-        elif re.search('δενξεχνάμε', plain_text):
+        elif re.search('στην? πυρκαγιά|υπό (?:μερικό|πλήρη )?έλεγχο',
+                      plain_text):
+            return 2
+        elif re.search('ανάσυρσης?|ανασύρθηκ(?:ε|αν)', plain_text):
+            return 3
+        elif re.search('απεγκλωβίστηκ(?:ε|αν)|απεγκλωβισμός?|μεταφορά|μεταφέρθηκ(?:ε|αν)',
+                      plain_text):
+            return 4
+        elif re.search('εντοπίστηκ(?:ε|αν)|εντοπισμός?|διασώθηκ(?:ε|αν)|αεροδιακομιδή', plain_text):
+            return 5
+        elif re.search('έρευνας? και διάσωσης?|επιχείρησης?|επιχειρούν|επιχείρησαν',
+                       plain_text):
+            return 6
+        else:
+            return 0
+    elif department.lower() == 'police':
+        # non-mappable events (announcements, traffic, re-tweets, cyber crime)
+        if re.search('δενξεχνάμε', plain_text):
             return -1
         elif re.search('σανσήμερα', plain_text):
             return -2
-        elif re.search('κυκλοφοριακές ρυθμίσεις', plain_text):
-            return -3
         elif re.match('RT ', plain_text):
+            return -3
+        elif re.search('κυκλοφοριακές ρυθμίσεις', plain_text):
             return -4
-        else:
+        elif re.search('ηλεκτρονικού εγκλήματος', plain_text):
             return -5
+        # mappable events (arrest, crime resolve)
+        elif re.search('συνελήφθ(?:η|ησαν|ηκε)', plain_text):
+            return 1
+        elif re.search('εξιχνιά(?:σθηκε|στηκαν)|εξακριβώθηκε|εξαρθρώθηκε', plain_text):
+            return 2
+
+        else:
+            return 0
     else:
         raise ValueError
