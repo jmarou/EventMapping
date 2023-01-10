@@ -5,12 +5,12 @@ from datetime import datetime
 
 import pandas as pd
 from sqlalchemy.sql import func
-
+import sqlalchemy
 from db.database import db_session
 from db.crud import str2department
 from operations.core import (regex_woi, calc_location, 
     remove_links_emojis, get_capital_words, translate_text,
-    geograpy_woi, categorize_tweet)
+    geograpy_woi, categorize_tweet, nlp_woi)
 
 
 def db_to_excel(department: str, file: str, sheet_name: str = None) -> None:
@@ -40,7 +40,7 @@ def db_to_excel(department: str, file: str, sheet_name: str = None) -> None:
     tweet_df = pd.DataFrame()
     
     with db_session() as session:
-        all_rows = session.query(departmentTable).all()
+        all_rows = session.query(departmentTable).where(departmentTable.category>=0).all()
         
         # doesn't guarantee unique values!
         ids = random.sample([row.id for row in all_rows], k=100)
@@ -48,17 +48,18 @@ def db_to_excel(department: str, file: str, sheet_name: str = None) -> None:
 
     # select 100 random rows
     # n = random.sample(range(0, len(all_rows)), 100)
-    tweet_df['text'] = [row.text for row in rows]
+    tweet_df['text'] = [row.plain_text for row in rows]
     tweet_df['spacy_woi'] = [row.spacy_woi for row in rows]
     tweet_df['regex_woi'] = [row.regex_woi for row in rows]
     tweet_df['geograpy_woi'] = [row.geograpy_woi for row in rows]
 
     mode = 'a' if os.path.exists(file+'.xlsx') else 'w'
-
-    writer = pd.ExcelWriter(file+'.xlsx', mode=mode)
-    tweet_df.to_excel(writer, sheet_name)
-    writer.save()
-    
+    if mode == 'a':
+        with pd.ExcelWriter(file+'.xlsx', mode=mode, if_sheet_exists='replace') as writer:
+            tweet_df.to_excel(writer, sheet_name)
+    else:
+        with pd.ExcelWriter(file+'.xlsx', mode=mode) as writer:
+            tweet_df.to_excel(writer, sheet_name)        
     return None
     
     
@@ -143,7 +144,7 @@ def update_tweets_regex_woi(department: str) -> None:
 
     with db_session() as session:
         all_tweets = session.query(departmentTable).where(
-            departmentTable.category>=0)
+            departmentTable.category>0)
 
         count = 0
         all_count = all_tweets.count()
@@ -185,7 +186,7 @@ def update_tweets_translated_text(department: str) -> None:
 
     with db_session() as session:
         all_tweets = session.query(departmentTable).where(
-            departmentTable.category>=0)
+            departmentTable.category>0).where(departmentTable.translated_text.is_(None))
 
         count = 0
         all_count = all_tweets.count()
@@ -238,3 +239,24 @@ def update_tweets_geograpy_woi(department: str) -> None:
         tweet.geograpy_woi = geograpy_woi(tweet.translated_text)
 
     session.commit()
+
+
+def update_tweets_spacy_woi(department: str) -> None:
+    """
+    Update/calculate the spacy_woi for all the tweets with eligible 
+    category representing an event, based on categorize_tweet function.
+    """
+    departmentTable = str2department(department)
+
+    with db_session() as session:
+        all_tweets = session.query(departmentTable).where(
+            departmentTable.category>0)
+
+        count = 0
+        all_count = all_tweets.count()
+        for tweet in all_tweets:
+                count += 1
+                print(f'{count/all_count * 100}%')
+                tweet.spacy_woi = nlp_woi(tweet.plain_text)
+        
+        session.commit()
