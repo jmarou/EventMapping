@@ -2,18 +2,21 @@ import os
 import json
 import random
 from datetime import datetime
+from typing import List
 
 import pandas as pd
 from sqlalchemy.sql import func
 import sqlalchemy
 from db.database import db_session
 from db.crud import str2department
+from db.models import EVENTS_DICΤ
 from operations.core import (regex_woi, calc_location, 
     remove_links_emojis, get_capital_words, translate_text,
     geograpy_woi, categorize_tweet, nlp_woi)
 
 
-def db_to_excel(department: str, file: str, sheet_name: str = None) -> None:
+def db_to_excel(file: str,
+                departments: List[str] = ['police', 'pyrosvestiki']) -> None:
     """
     Reads rows from a database table and writes the result to a new sheet
     in an xlsx file. If the specified output already exists it appends the
@@ -21,45 +24,61 @@ def db_to_excel(department: str, file: str, sheet_name: str = None) -> None:
 
     Parameters
     ----------
-    department: str
-        The name of the department.
     file: str
         The absolute or relative path of the output xlsx file.
-    sheet_name: str
-        The name of the sheet to write to.
+    departments: List[str]
+        A list containing the name of the departments 
+        Default: police, pyrosvestiki.
 
     Returns
     ----------
     None
     """
-    departmentTable = str2department(department)
+    # mode = 'a' if os.path.exists(file+'.xlsx') else 'w'
+    writer = pd.ExcelWriter(file+'.xlsx', engine='xlsxwriter')
 
-    if sheet_name is None:
-        sheet_name = 'Sheet1'
+    for department in departments:
+        departmentTable = str2department(department)
 
-    tweet_df = pd.DataFrame()
-    
-    with db_session() as session:
-        all_rows = session.query(departmentTable).where(departmentTable.category>=0).all()
+        tweet_df = pd.DataFrame()
         
-        # doesn't guarantee unique values!
-        ids = random.sample([row.id for row in all_rows], k=100)
-        rows = session.query(departmentTable).filter(departmentTable.id.in_(ids))
+        with db_session() as session:
+            # all_rows = session.query(departmentTable).where(departmentTable.category>=0).all()
+            all_rows = session.query(departmentTable).all()
+            
+            # doesn't guarantee unique values!
+            ids = random.sample([row.id for row in all_rows], k=100)
+            rows = session.query(departmentTable).filter(departmentTable.id.in_(ids))
 
-    # select 100 random rows
-    # n = random.sample(range(0, len(all_rows)), 100)
-    tweet_df['text'] = [row.plain_text for row in rows]
-    tweet_df['spacy_woi'] = [row.spacy_woi for row in rows]
-    tweet_df['regex_woi'] = [row.regex_woi for row in rows]
-    tweet_df['geograpy_woi'] = [row.geograpy_woi for row in rows]
+        # select 100 random rows
+        # n = random.sample(range(0, len(all_rows)), 100)
+        tweet_df['text'] = [row.plain_text for row in rows]
+        tweet_df['category'] = [EVENTS_DICΤ[department][row.category] for row in rows]
+        tweet_df['regex_woi'] = [row.regex_woi for row in rows]
+        tweet_df['spacy_woi'] = [row.spacy_woi for row in rows]
+        tweet_df['geograpy_woi'] = [row.geograpy_woi for row in rows]
+        tweet_df['capital_words'] = [row.capital_words for row in rows]
 
-    mode = 'a' if os.path.exists(file+'.xlsx') else 'w'
-    if mode == 'a':
-        with pd.ExcelWriter(file+'.xlsx', mode=mode, if_sheet_exists='replace') as writer:
-            tweet_df.to_excel(writer, sheet_name)
-    else:
-        with pd.ExcelWriter(file+'.xlsx', mode=mode) as writer:
-            tweet_df.to_excel(writer, sheet_name)        
+        tweet_df.to_excel(writer, sheet_name=department, startrow=1,
+                          header=False, index=False)
+
+        # get the worksheet
+        worksheet = writer.sheets[department]
+
+        # dimensions of the dataframe
+        (max_row, max_col) = tweet_df.shape
+        
+        # create a list of column headers
+        column_settings = []
+        for header in tweet_df.columns:
+            column_settings.append({'header': header})
+        
+        # add the table with the headers
+        worksheet.add_table(0, 0, max_row, max_col-1, {'columns': column_settings})
+        # make the columns wider for clarity
+        worksheet.set_column(0, max_col -1, 12)
+        
+    writer.save()
     return None
     
     

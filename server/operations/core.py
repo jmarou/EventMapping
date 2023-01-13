@@ -12,10 +12,10 @@ from tokens import DEEPL_TOKEN
 DEFAULT_PATTERN = re.compile((
 "(\\b(επάνω |"
 "νότιας |βόρειας |ανατολικής |δυτικής |"
-"[λ|Λ]εωφόρο |[ν|Ν]ομού |νομούς.* και |νομών.* και |πλατείας? |"
-"νήσου |λίμνη |Π.Υ. |Π.Ε. |Δ.Ε. |Ε.Ο. |"
+"[λ|Λ]εωφόρο |[ν|Ν]ομού |νομούς.* και |νομών.* και |πλατείας? |σταθμό |"
+"νήσου |λίμνη |Π.Υ. |Π.Ε. |Δ.Ε. |Ε.Ο. |T.K. |"
 "οδό |οδού |οδών.*και |δασάκι |φαράγγι (?:του|της|των )?|"
-"περιοχής |δήμο (?:του|της )?|δήμου |"
+"περιοχής? |δήμο (?:του|της )?|δήμου |"
 "(?:δημοτική )?(?:κοινότητα|ενότητα )|"
 "(?:στ[η|ο]ν? )|(?:στα )|(?:στ[ι|ου]ς )|(?:του? )|(?:τη[ς|ν]? )|(?:των ))"
 "((?:[Α-ΩΆΈΊΎΏΉΌ][α-ωάέύίόώήϊΐϋ]{0,1}\.\s)+|"
@@ -49,10 +49,10 @@ def regex_woi(text: str, pattern: re.compile = DEFAULT_PATTERN) -> str:
                         # "επί |της |του? |στον? |στην? |στα |στους |την? |"
         woi = re.sub(pattern=re.compile(
                         "\\b(στ[η|ο]ν? |στα |στ[ι|ου]ς |του? |τη[ς|ν]? |των |"
-                        "περιοχής?"
-                        "Πυροσβεστικ[ού|ό]|Σώμα[τος]?|Πολεμικής?|Αεροπορίας?|"
+                        "περιοχής?|"
+                        "Πυροσβεστικ(?:ού|ό)|Σώμα(?:τος)?|Πολεμικής?|Αεροπορίας?|"
                         "Ομάδας?|Δίωξης?|Τμήμα(?:τος|τα)?|Ασφαλείας?|Ασφάλειας?|Ναρκωτικών|"
-                        "Διεύθυνσης?|Αστυνομικ[ό|ού|ός]|Νόμο[υ|ς]|Αστυνομίας?|Οικονομικής?)"),
+                        "Διεύθυνσης?|Αστυνομικ(?:ό|ού|ός)|Νόμο(?:υ|ς)?|Αστυνομίας?|Οικονομικής?)"),
                       repl= "",
                       string=woi).strip()
         if woi.isspace():
@@ -191,10 +191,22 @@ def get_capital_words(text: str) -> str:
     capital_words: str
         Space separated capital words.
     """
-    capital_words = re.findall(pattern='[Α-ΩΆΈΊΎΏΉΌ][α-ωάέύίόώήϊΐϋ]+', string=text)
-    if capital_words: 
-        return " ".join([word for word in capital_words[1:]])
-    return ""    
+    capital_words = []
+    sentences = text.split('. ')
+    for sentence in sentences:
+        # for every full sentence check all the words, except the first one
+        for word in sentence.split()[1:]:
+            unicode = ord(word[0])
+            # 902: Ά, 904-937: Έ, Ή, ..., Α, Β, Γ, ..., Ω
+            if unicode == 902 or (unicode>=904 and unicode <=937):
+                capital_words.append(word)
+    
+    return " ".join(capital_words)
+
+    # capital_words = re.findall(pattern='[Α-ΩΆΈΊΎΏΉΌ][α-ωάέύίόώήϊΐϋ]+', string=text)
+    # if capital_words: 
+    #     return " ".join([word for word in capital_words[1:]])
+    # return ""    
     
   
 
@@ -214,7 +226,8 @@ def remove_links_emojis(text):
         The tweet text wihtout html links, hashtags and emojis
     """
     # REMOVE ALL LINKS AND HASHTAGS
-    text = re.sub(r'(<a href="https?://[\w\.\/]*">#?)|(https?://[\w\/\.]*</a>)|(</a>)', "", text)
+    # |https?://[\w.\/]*
+    text = re.sub(r'(<a href="https?://[\w\.,\/]*">#?)|(https?://[\w\/\.]*</a>)|(</a>)', "", text)
     # place period when missing before newline character
     text = re.sub(r' *?\.?\n', '.\n', text)
     # &amp; is special symbol for '&' in html, but for plain text is not needed
@@ -277,21 +290,21 @@ def categorize_tweet(plain_text: str, department: str) -> int:
             return -1
         elif re.search('δελτίο τύπου', plain_text):
             return -2
-        elif re.match('RT ', plain_text):
+        elif re.match('rt ', plain_text):
             return -3
         
         # mappable events (fire, rescue, transportation, operations)
         elif re.search('κατάσβεσης?|κατεσβέσθη|κατασβέσθη', plain_text):
             return 1
-        elif re.search('στην? πυρκαγιά|υπό (?:μερικό|πλήρη )?έλεγχο',
+        elif re.search('στην? πυρκαγιά|υπό (?:μερικό |πλήρη |)έλεγχο|πυρκαγιά σε',
                       plain_text):
             return 2
         elif re.search('ανάσυρσης?|ανασύρθηκ(?:ε|αν)', plain_text):
             return 3
-        elif re.search('απεγκλωβίστηκ(?:ε|αν)|απεγκλωβισμός?|μεταφορά|μεταφέρθηκ(?:ε|αν)',
+        elif re.search('απεγκλωβίστηκ(?:ε|αν)|απεγκλωβισμός?|μεταφορά|μεταφέρθηκ(?:ε|αν)|αεροδιακομιδή',
                       plain_text):
             return 4
-        elif re.search('εντοπίστηκ(?:ε|αν)|εντοπισμός?|διασώθηκ(?:ε|αν)|αεροδιακομιδή', plain_text):
+        elif re.search('εντοπίστηκ(?:ε|αν)|εντοπισμός?|διασώθηκ(?:ε|αν)', plain_text):
             return 5
         elif re.search('έρευνας? και διάσωσης?|επιχείρησης?|επιχειρούν|επιχείρησαν',
                        plain_text):
@@ -302,18 +315,18 @@ def categorize_tweet(plain_text: str, department: str) -> int:
         # non-mappable events (announcements, traffic, re-tweets, cyber crime)
         if re.search('δενξεχνάμε', plain_text):
             return -1
-        elif re.search('σανσήμερα', plain_text):
+        elif re.search('σανσ[η|ή]μερα', plain_text):
             return -2
-        elif re.match('RT ', plain_text):
+        elif re.match('rt ', plain_text):
             return -3
-        elif re.search('κυκλοφοριακές ρυθμίσεις', plain_text):
+        elif re.search('κυκλοφοριακές ρυθμίσεις|κυκλοφορίας?|ενημερωθείτε για την κίνηση', plain_text):
             return -4
         elif re.search('ηλεκτρονικού εγκλήματος', plain_text):
             return -5
         # mappable events (arrest, crime resolve)
-        elif re.search('συνελήφθ(?:η|ησαν|ηκε)', plain_text):
+        elif re.search('συνελήφθ(?:η|ησαν|ηκε)|εξαρθρώθηκε|εξάρθρωση', plain_text):
             return 1
-        elif re.search('εξιχνιά(?:σθηκε|στηκαν)|εξακριβώθηκε|εξαρθρώθηκε', plain_text):
+        elif re.search('εξιχνιά(?:σ[θ|τ]ηκε|σ[τ|θ]ηκαν)|[εξα|δια]κριβώθηκε|εξακρίβωση', plain_text):
             return 2
 
         else:
