@@ -13,7 +13,7 @@ from sqlalchemy import (
 from db.database import Base, engine
 
 
-EVENTS_DICΤ = {
+EVENTS_DICT = {
     'pyrosvestiki': {
         -3: 'Retweet',
         -2: 'Δελτίο Τύπου',
