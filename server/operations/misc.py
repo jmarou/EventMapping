@@ -1,4 +1,3 @@
-import os
 import json
 import random
 from datetime import datetime
@@ -6,10 +5,9 @@ from typing import List
 
 import pandas as pd
 from sqlalchemy.sql import func
-import sqlalchemy
 from db.database import db_session
 from db.crud import str2department
-from db.models import EVENTS_DICΤ
+from db.models import EVENTS_DICT
 from operations.core import (regex_woi, calc_location, 
     remove_links_emojis, get_capital_words, translate_text,
     geograpy_woi, categorize_tweet, nlp_woi)
@@ -53,11 +51,12 @@ def db_to_excel(file: str,
         # select 100 random rows
         # n = random.sample(range(0, len(all_rows)), 100)
         tweet_df['text'] = [row.plain_text for row in rows]
-        tweet_df['category'] = [EVENTS_DICΤ[department][row.category] for row in rows]
+        tweet_df['category'] = [EVENTS_DICT[department][row.category] for row in rows]
         tweet_df['regex_woi'] = [row.regex_woi for row in rows]
         tweet_df['spacy_woi'] = [row.spacy_woi for row in rows]
         tweet_df['geograpy_woi'] = [row.geograpy_woi for row in rows]
         tweet_df['capital_words'] = [row.capital_words for row in rows]
+        tweet_df['ground_truth'] = [None for row in rows]
 
         tweet_df.to_excel(writer, sheet_name=department, startrow=1,
                           header=False, index=False)
