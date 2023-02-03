@@ -15,7 +15,7 @@ DEFAULT_PATTERN = re.compile((
 "[λ|Λ]εωφόρο |[ν|Ν]ομού |νομούς.* και |νομών.* και |πλατείας? |σταθμό |"
 "νήσου |λίμνη |Π.Υ. |Π.Ε. |Δ.Ε. |Ε.Ο. |T.K. |"
 "οδό |οδού |οδών.*και |δασάκι |φαράγγι (?:του|της|των )?|"
-"περιοχής? |δήμο (?:του|της )?|δήμου |"
+"(?:περιοχής? )|δήμο (?:του|της )?|δήμου |"
 "(?:δημοτική )?(?:κοινότητα|ενότητα )|"
 "(?:στ[η|ο]ν? )|(?:στα )|(?:στ[ι|ου]ς )|(?:του? )|(?:τη[ς|ν]? )|(?:των ))"
 "((?:[Α-ΩΆΈΊΎΏΉΌ][α-ωάέύίόώήϊΐϋ]{0,1}\.\s)+|"
@@ -202,12 +202,6 @@ def get_capital_words(text: str) -> str:
                 capital_words.append(word)
     
     return " ".join(capital_words)
-
-    # capital_words = re.findall(pattern='[Α-ΩΆΈΊΎΏΉΌ][α-ωάέύίόώήϊΐϋ]+', string=text)
-    # if capital_words: 
-    #     return " ".join([word for word in capital_words[1:]])
-    # return ""    
-    
   
 
 def remove_links_emojis(text):
@@ -285,11 +279,9 @@ def categorize_tweet(plain_text: str, department: str) -> int:
     """
     plain_text = plain_text.lower()
     if department.lower() == 'pyrosvestiki':
-        # non-mappable events (announcements, re-tweets, etc.)
+        # non-mappabe events (announcements, re-tweets, etc.)
         if re.search('τελευταίο 24ωρο', plain_text):
             return -1
-        elif re.search('δελτίο τύπου', plain_text):
-            return -2
         elif re.match('rt ', plain_text):
             return -3
         
@@ -301,28 +293,28 @@ def categorize_tweet(plain_text: str, department: str) -> int:
             return 2
         elif re.search('ανάσυρσης?|ανασύρθηκ(?:ε|αν)', plain_text):
             return 3
-        elif re.search('απεγκλωβίστηκ(?:ε|αν)|απεγκλωβισμός?|μεταφορά|μεταφέρθηκ(?:ε|αν)|αεροδιακομιδή',
+        elif re.search('απεγκλωβίστηκ(?:ε|αν)|απεγκλωβισμός?|μεταφορά|μεταφέρθηκ(?:ε|αν)|'
+                       'αεροδιακομιδή|εντοπίστηκ(?:ε|αν)|εντοπισμός?|διασώθηκ(?:ε|αν)',
                       plain_text):
             return 4
-        elif re.search('εντοπίστηκ(?:ε|αν)|εντοπισμός?|διασώθηκ(?:ε|αν)', plain_text):
-            return 5
         elif re.search('έρευνας? και διάσωσης?|επιχείρησης?|επιχειρούν|επιχείρησαν',
                        plain_text):
-            return 6
+            return 5
+        # announcement but without event
+        elif re.search('δελτίο τύπου', plain_text):
+            return -2
         else:
             return 0
     elif department.lower() == 'police':
         # non-mappable events (announcements, traffic, re-tweets, cyber crime)
-        if re.search('δενξεχνάμε', plain_text):
-            return -1
-        elif re.search('σανσ[η|ή]μερα', plain_text):
+        if re.search('δενξεχνάμε|σαν[η|ή]μερα', plain_text):
             return -2
         elif re.match('rt ', plain_text):
             return -3
         elif re.search('κυκλοφοριακές ρυθμίσεις|κυκλοφορίας?|ενημερωθείτε για την κίνηση', plain_text):
             return -4
         elif re.search('ηλεκτρονικού εγκλήματος', plain_text):
-            return -5
+            return -1
         # mappable events (arrest, crime resolve)
         elif re.search('συνελήφθ(?:η|ησαν|ηκε)|εξαρθρώθηκε|εξάρθρωση', plain_text):
             return 1
