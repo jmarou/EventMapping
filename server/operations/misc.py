@@ -146,9 +146,9 @@ def update_tweets_plain_text(department: str) -> None:
         count = 0
         all_count = len(all_tweets)
         for tweet in all_tweets:
-                count+= 1
-                print(f'{count/all_count * 100}%')
-                tweet.plain_text = remove_links_emojis(tweet.text)
+            count+= 1
+            print(f'{count/all_count * 100}%')
+            tweet.plain_text = remove_links_emojis(tweet.text)
         
         session.commit()
 
@@ -161,14 +161,19 @@ def update_tweets_regex_woi(department: str) -> None:
     departmentTable = str2department(department)
 
     with db_session() as session:
-        all_tweets = session.query(departmentTable).where(
-            departmentTable.category>0)
+        # all_tweets = session.query(departmentTable).where(
+        #     departmentTable.category>0)
+        all_tweets = session.query(departmentTable)
 
         count = 0
         all_count = all_tweets.count()
         for tweet in all_tweets:
-                count += 1
-                print(f'{count/all_count * 100}%')
+            count += 1
+            print(f'{count/all_count * 100}%')
+            
+            if tweet.category<1:
+                tweet.regex_woi = None
+            else:
                 tweet.regex_woi = regex_woi(tweet.plain_text)
         
         session.commit()
@@ -182,15 +187,19 @@ def update_tweets_capital_words(department: str) -> None:
     departmentTable = str2department(department)
     
     with db_session() as session:
-        all_tweets = session.query(departmentTable).where(
-            departmentTable.category>=0)
+        # all_tweets = session.query(departmentTable).where(
+        #     departmentTable.category>=0)
+        all_tweets = session.query(departmentTable)
 
         count = 0
         all_count = all_tweets.count()
         for tweet in all_tweets:
             count += 1
             print(f'{count} / {all_count}')
-            tweet.capital_words = get_capital_words(tweet.plain_text)
+            if tweet.category>0:
+                tweet.capital_words = get_capital_words(tweet.plain_text)
+            else:
+                tweet.capital_words = None
         
         session.commit()
 

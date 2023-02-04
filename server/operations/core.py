@@ -12,10 +12,10 @@ from tokens import DEEPL_TOKEN
 DEFAULT_PATTERN = re.compile((
 "(\\b(επάνω |"
 "νότιας |βόρειας |ανατολικής |δυτικής |"
-"[λ|Λ]εωφόρο |[ν|Ν]ομού |νομούς.* και |νομών.* και |πλατείας? |σταθμό |"
+"[λ|Λ]εωφόρου? |[ν|Ν]ομού |νομούς.* και |νομών.* και |πλατείας? |σταθμό |"
 "νήσου |λίμνη |Π.Υ. |Π.Ε. |Δ.Ε. |Ε.Ο. |T.K. |"
-"οδό |οδού |οδών.*και |δασάκι |φαράγγι (?:του|της|των )?|"
-"(?:περιοχής? )|δήμο (?:του|της )?|δήμου |"
+"(?:οδό) |(?:οδού) |(?:οδών).*(?:και) |δασάκι |φαράγγι (?:του|της|των )?|"
+"(?:περιοχής? )|(?:δήμο του|της )?|(:?δήμου) |"
 "(?:δημοτική )?(?:κοινότητα|ενότητα )|"
 "(?:στ[η|ο]ν? )|(?:στα )|(?:στ[ι|ου]ς )|(?:του? )|(?:τη[ς|ν]? )|(?:των ))"
 "((?:[Α-ΩΆΈΊΎΏΉΌ][α-ωάέύίόώήϊΐϋ]{0,1}\.\s)+|"
@@ -49,7 +49,7 @@ def regex_woi(text: str, pattern: re.compile = DEFAULT_PATTERN) -> str:
                         # "επί |της |του? |στον? |στην? |στα |στους |την? |"
         woi = re.sub(pattern=re.compile(
                         "\\b(στ[η|ο]ν? |στα |στ[ι|ου]ς |του? |τη[ς|ν]? |των |"
-                        "περιοχής?|"
+                        "περιοχής?|οδών |και |"
                         "Πυροσβεστικ(?:ού|ό)|Σώμα(?:τος)?|Πολεμικής?|Αεροπορίας?|"
                         "Ομάδας?|Δίωξης?|Τμήμα(?:τος|τα)?|Ασφαλείας?|Ασφάλειας?|Ναρκωτικών|"
                         "Διεύθυνσης?|Αστυνομικ(?:ό|ού|ός)|Νόμο(?:υ|ς)?|Αστυνομίας?|Οικονομικής?)"),
@@ -192,7 +192,7 @@ def get_capital_words(text: str) -> str:
         Space separated capital words.
     """
     capital_words = []
-    sentences = text.split('. ')
+    sentences = text.split('.')
     for sentence in sentences:
         # for every full sentence check all the words, except the first one
         for word in sentence.split()[1:]:
@@ -201,7 +201,7 @@ def get_capital_words(text: str) -> str:
             if unicode == 902 or (unicode>=904 and unicode <=937):
                 capital_words.append(word)
     
-    return " ".join(capital_words)
+    return re.sub(",", "", " ".join(capital_words))
   
 
 def remove_links_emojis(text):
@@ -220,16 +220,15 @@ def remove_links_emojis(text):
         The tweet text wihtout html links, hashtags and emojis
     """
     # REMOVE ALL LINKS AND HASHTAGS
-    # |https?://[\w.\/]*
-    text = re.sub(r'(<a href="https?://[\w\.,\/]*">#?)|(https?://[\w\/\.]*</a>)|(</a>)', "", text)
-    # place period when missing before newline character
-    text = re.sub(r' *?\.?\n', '.\n', text)
+    text = re.sub(r'<a href="https?://[\s\S]*?">#?|https?://[\s\S]*?</a>|https?://[\s\S]*$|</a>', "", text)
+    # remove any newline character (and dot+spaces before it) with single dot
+    text = re.sub(r'\.? *\n', '. ', text)
     # &amp; is special symbol for '&' in html, but for plain text is not needed
     text = re.sub(r'&amp;', 'και', text)
     # remove anything that is not word, whitespace, comma or period (emojis)
     text = re.sub(r'[^\w\s,.]', ' ', text)
     # replace double (or more) spaces with single space
-    return re.sub(r' {2,}', ' ', text)
+    return re.sub(r' {2,}', ' ', text.strip())
 
 
 def geograpy_woi(text: str) -> str:
