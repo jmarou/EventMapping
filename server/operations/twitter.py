@@ -6,16 +6,13 @@ from typing import List
 from tokens import TWITTER_TOKEN
 
 # account ids given by twitter to user accounts
-ACCOUNT_IDS = {
-    "hellenic_police": 119014566,
-    "pyrosvestiki": 158003436
-}
+ACCOUNT_IDS = {"hellenic_police": 119014566, "pyrosvestiki": 158003436}
 
 # default parameters for fetching new tweets from twitter API
-DEFAULT_TWEET_PARAMETERS =  {
-        "max_results": "100",
-        "expansions": ["author_id"],
-        "tweet.fields": "created_at"
+DEFAULT_TWEET_PARAMETERS = {
+    "max_results": "100",
+    "expansions": ["author_id"],
+    "tweet.fields": "created_at",
 }
 
 
@@ -31,9 +28,9 @@ class BearerAuth(requests.auth.AuthBase):
         return r
 
 
-def download_tweets(account_id: int, max_results: int=100) -> List:
+def download_tweets(account_id: int, max_results: int = 100) -> List:
     """
-    Gets the account name of the twitter user and a set of parameters and 
+    Gets the account name of the twitter user and a set of parameters and
     returns the last tweets from their timeline.
 
     Parameters
@@ -51,15 +48,15 @@ def download_tweets(account_id: int, max_results: int=100) -> List:
     r_data = []
     while True:
         r_json_next = requests.get(
-            auth = BearerAuth(TWITTER_TOKEN),
-            url = "https://api.twitter.com/2/users/{}/tweets".format(account_id),
-            params = parameters
+            auth=BearerAuth(TWITTER_TOKEN),
+            url="https://api.twitter.com/2/users/{}/tweets".format(account_id),
+            params=parameters,
         ).json()
-        r_data_next = r_json_next['data']
+        r_data_next = r_json_next["data"]
         print_message(
             len=len(r_data_next),
-            first_date=r_data_next[0]['created_at'],
-            last_date=r_data_next[-1]['created_at']
+            first_date=r_data_next[0]["created_at"],
+            last_date=r_data_next[-1]["created_at"],
         )
         # r_json = {**r_json, **r_json_next}
         r_data += r_data_next
@@ -69,13 +66,15 @@ def download_tweets(account_id: int, max_results: int=100) -> List:
         else:
             # continue with the next patch of tweets
             parameters["pagination_token"] = r_json_next["meta"]["next_token"]
-            parameters['max_results'] = min(100, max_results)
-    
-    return r_data        
+            parameters["max_results"] = min(100, max_results)
+
+    return r_data
 
 
 def print_message(len: str, first_date: str, last_date: str) -> str:
-    print(f"Fetched {len} new tweets from "\
-        f"{datetime.strptime(first_date, '%Y-%m-%dT%H:%M:%S.%f%z').date()}"\
-        " until "\
-        f"{datetime.strptime(last_date, '%Y-%m-%dT%H:%M:%S.%f%z').date()}")
+    print(
+        f"Fetched {len} new tweets from "
+        f"{datetime.strptime(first_date, '%Y-%m-%dT%H:%M:%S.%f%z').date()}"
+        " until "
+        f"{datetime.strptime(last_date, '%Y-%m-%dT%H:%M:%S.%f%z').date()}"
+    )

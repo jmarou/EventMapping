@@ -3,7 +3,7 @@ from typing import Any, List, Union
 
 from db.database import db_session
 from db.models import PyrosvestikiTweets, PoliceTweets
-from operations.core import format_text, calc_location
+from operations.core import format_text, geocoding_osm
 from operations.twitter import ACCOUNT_IDS
 
 
@@ -126,7 +126,7 @@ def create_new_tweet(tweet: dict) -> Union[PoliceTweets,
     text = format_text(tweet["text"])
     
     # get the location via geocoding analysis
-    longitude, latitude = calc_location(tweet["text"])
+    longitude, latitude = geocoding_osm(tweet["text"])
     return departmentTable(
                 id=id,
                 text=text,
