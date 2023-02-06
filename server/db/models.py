@@ -1,61 +1,56 @@
 import json
 from datetime import datetime
 
-from sqlalchemy import (
-    Column,
-    String,
-    DateTime,
-    BIGINT,
-    Float,
-    INTEGER
-)
+from sqlalchemy import Column, String, DateTime, BIGINT, Float, INTEGER
 
 from db.database import Base, engine
 
 
-EVENTS_DICΤ = {
-    'pyrosvestiki': {
-        -3: 'Retweet',
-        -2: 'Δελτίο Τύπου',
-        -1: 'Εξέλιξη τελευταίου 24ωρου',
-        0: 'Διάφορα',
-        1: 'Κατάσβεση πυρκαγιάς',
-        2: 'Ενημέρωση πυρκαγιάς',
-        3: 'Ανάσυρση ατόμου',
-        4: 'Απεγκλωβισμός-μεταφορά',
-        5: 'Εντοπισμός-διάσωση',
-        6: 'Επιχείρηση έρευνας & διάσωσης'
+EVENTS_DICT = {
+    "pyrosvestiki": {
+        -4: "Δελτίο Τύπου",
+        -3: "Retweet",
+        -2: "#ΣανΣήμερα-#ΔενΞεχνάμε",
+        -1: "Εξέλιξη τελευταίου 24ωρου",
+        0: "Διάφορα",
+        1: "Κατάσβεση πυρκαγιάς",
+        2: "Ενημέρωση πυρκαγιάς",
+        3: "Ανάσυρση ατόμου",
+        4: "Απεγκλωβισμός-Εντοπισμός-Διάσωση",
+        5: "Επιχείρηση έρευνας & διάσωσης",
     },
-    'police':{
-        -5: 'Ηλεκτρονικό έγκλημα',
-        -4: 'Κυκλοφοριακές ρυθμίσεις-κίνηση',
-        -3: 'Retweet',
-        -2: '#ΣανΣήμερα',
-        -1: '#ΔενΞεχνάμε',
-        0: 'Διάφορα',
-        1: 'Σύλληψη-εξάρθρωση',
-        2: 'Εξιχνίαση-εξακρίβωση υπόθεσης'
-    }
+    "police": {
+        -4: "Κυκλοφοριακές ρυθμίσεις-κίνηση",
+        -3: "Retweet",
+        -2: "#ΣανΣήμερα-#ΔενΞεχνάμε",
+        -1: "Ηλεκτρονικό έγκλημα",
+        0: "Διάφορα",
+        1: "Σύλληψη-εξάρθρωση",
+        2: "Εξιχνίαση-εξακρίβωση υπόθεσης",
+        3: "Εντοπισμός"
+    },
 }
 
 
-def get_geojson(id: int, text: str, created_at: datetime, 
-                latitude: Float, longitude: Float) -> json:
+def get_geojson(
+    id: int, text: str, created_at: datetime, latitude: Float, longitude: Float
+) -> json:
     geojson = {"type": "Feature"}
     geojson["properties"] = {
         "id": id,
         "created_at": created_at.strftime("%d/%m/%Y, %H:%M:%S"),
-        "text": text
+        "text": text,
     }
     geojson["geometry"] = {
         "type": "Point",
-        "coordinates": [latitude, longitude]
+        "coordinates": [latitude, longitude],
     }
     return json.dumps(geojson)
 
 
 class PyrosvestikiTweets(Base):
     """DB model for pyrosvestiki tweets."""
+
     __tablename__ = "pyrosvestikitweets"
 
     id = Column("id", BIGINT, primary_key=True)
@@ -71,9 +66,21 @@ class PyrosvestikiTweets(Base):
     latitude = Column("latitude", Float)
     longitude = Column("longitude", Float)
 
-    def __init__(self, id, text, created_at, plain_text, category, 
-                translated_text, regex_woi, capital_words, 
-                geograpy_woi, spacy_woi, latitude=None, longitude=None): 
+    def __init__(
+        self,
+        id,
+        text,
+        created_at,
+        plain_text,
+        category,
+        translated_text,
+        regex_woi,
+        capital_words,
+        geograpy_woi,
+        spacy_woi,
+        latitude=None,
+        longitude=None,
+    ):
         self.id = id
         self.text = text
         self.created_at = created_at
@@ -88,12 +95,14 @@ class PyrosvestikiTweets(Base):
         self.longitude = longitude
 
     def __repr__(self):
-        return get_geojson(self.id, self.text, self.created_at, self.latitude, 
-                           self.longitude)
+        return get_geojson(
+            self.id, self.text, self.created_at, self.latitude, self.longitude
+        )
 
 
 class PoliceTweets(Base):
     """DB model for police tweets."""
+
     __tablename__ = "policetweets"
 
     id = Column("id", BIGINT, primary_key=True)
@@ -109,9 +118,21 @@ class PoliceTweets(Base):
     latitude = Column("latitude", Float)
     longitude = Column("longitude", Float)
 
-    def __init__(self, id, text, created_at, plain_text, category, 
-                translated_text, regex_woi, capital_words, 
-                geograpy_woi, spacy_woi, latitude=None, longitude=None): 
+    def __init__(
+        self,
+        id,
+        text,
+        created_at,
+        plain_text,
+        category,
+        translated_text,
+        regex_woi,
+        capital_words,
+        geograpy_woi,
+        spacy_woi,
+        latitude=None,
+        longitude=None,
+    ):
         self.id = id
         self.text = text
         self.created_at = created_at
@@ -126,8 +147,9 @@ class PoliceTweets(Base):
         self.longitude = longitude
 
     def __repr__(self):
-        return get_geojson(self.id, self.text, self.created_at, self.latitude, 
-                           self.longitude)
+        return get_geojson(
+            self.id, self.text, self.created_at, self.latitude, self.longitude
+        )
 
 
 def create_DB_tables():
