@@ -12,7 +12,7 @@ from operations.core import (
     regex_woi,
     geocoding_osm,
     remove_links_emojis,
-    get_capital_words,
+    capital_words,
     translate_text,
     geograpy_woi,
     categorize_tweet,
@@ -270,7 +270,7 @@ def update_tweets_capital_words(department: str) -> None:
             count += 1
             print(f"{count} / {all_count}")
             if tweet.category > 0:
-                tweet.capital_words = get_capital_words(tweet.plain_text)
+                tweet.capital_words = capital_words(tweet.plain_text)
             else:
                 tweet.capital_words = None
 

@@ -4,7 +4,7 @@ from operations.core import (
     remove_links_emojis,
     translate_text,
     geograpy_woi,
-    get_capital_words,
+    capital_words,
     regex_woi,
     spacy_woi,
     geocoding_osm,
@@ -122,12 +122,12 @@ class testOperationsCore(unittest.TestCase):
     def test_geograpy_woi(self):
         self.assertEqual(geograpy_woi(self.translated1), "Kryoneri")
 
-    def test_get_capital_words(self):
+    def test_capital_words(self):
         self.assertEqual(
-            get_capital_words(self.plain_text1), "Κατερίνης Πιερίας"
+            capital_words(self.plain_text1), "Κατερίνης Πιερίας"
         )
         self.assertEqual(
-            get_capital_words(self.plain_text4), "Φανού Αμύνταιου Φλώρινας"
+            capital_words(self.plain_text4), "Φανού Αμύνταιου Φλώρινας"
         )
 
     def test_regex_woi(self):
