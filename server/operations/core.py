@@ -209,7 +209,7 @@ def geocoding_google(text: str) -> Tuple:
         # todo check country
         return (
             r[0]["geometry"]["location"]["lng"],
-            r.json[0]["geometry"]["location"]["lat"],
+            r[0]["geometry"]["location"]["lat"],
         )
     return (None, None)
 

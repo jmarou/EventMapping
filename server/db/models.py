@@ -37,7 +37,7 @@ def get_geojson(
 ) -> json:
     geojson = {"type": "Feature"}
     geojson["properties"] = {
-        "id": id,
+        "id": str(id),  # id > javascript highest integer value 
         "created_at": created_at.strftime("%d/%m/%Y, %H:%M:%S"),
         "text": text,
     }

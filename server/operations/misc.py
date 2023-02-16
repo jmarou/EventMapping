@@ -11,6 +11,7 @@ from db.models import EVENTS_DICT
 from operations.core import (
     regex_woi,
     geocoding_osm,
+    geocoding_esri,
     remove_links_emojis,
     capital_words,
     translate_text,
@@ -309,19 +310,22 @@ def update_tweets_location(department: str) -> None:
     departmentTable = str2department(department)
 
     with db_session() as session:
-        all_tweets = session.query(departmentTable).where(
-            departmentTable.regex_woi != None
-        )
+        all_tweets = session.query(departmentTable)
 
         count = 0
         all_count = all_tweets.count()
         for tweet in all_tweets:
             count += 1
             print(f"{count} / {all_count}")
-            tweet.longitude, tweet.latitude = geocoding_osm(tweet.regex_woi)
-            session.commit()
+            if tweet.category>0:
+                tweet.longitude, tweet.latitude = tweet.latitude, tweet.longitude
+            # if tweet.category<1:
+            #     tweet.longitude, tweet.latitude = None, None
+            # else:
+            #     tweet.longitude, tweet.latitude = geocoding_esri(tweet.regex_woi)
+            # session.commit()
 
-        # session.commit()
+        session.commit()
 
 
 def update_tweets_geograpy_woi(department: str) -> None:
