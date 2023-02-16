@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { renderToString } from "react-dom/server";
-import { useHistory } from "react-router-dom";
+// import { useHistory } from "react-router-dom";
 import "leaflet-easybutton";
 
 import "./App.css";
@@ -88,11 +88,6 @@ let LeafletMap = (props) => {
       "Google Satellite": Google_Satellite,
     };
     
-    // const overlaymaps = {
-    //   "Tweets: Hellenic Fire Department": pyrosvestiki_tweets,
-    //   "Tweets: Hellenic Police": police_tweets,
-    // };
-
     // Add the control layer and set Humanitarian Map as default
     L.control.layers(basemaps).addTo(map);
     HumanitarianMap.addTo(map);
@@ -161,16 +156,15 @@ let LeafletMap = (props) => {
     return renderToString(
       <div>
         {department === "Police" ? (
-          <h4 style={{ color: "#0e11db" }}>Hellenic Police Tweet</h4>
+          <h4 style={{ color: "#0e11db" }}>Hellenic Police <a style={{ color: "#0e11db"  }} target= "_blank" href={`https://twitter.com/pyrosvestiki/status/${feature.properties.id}`}> Tweet</a></h4>
         ) : (
-          <h4 style={{ color: "#ce1c1c" }}>Pyrosvestiki Tweet</h4>
+          <h4 style={{ color: "#ce1c1c" }}>Pyrosvestiki <a style={{ color: "#ce1c1c" }} target= "_blank" href={`https://twitter.com/pyrosvestiki/status/${feature.properties.id}`}> Tweet</a></h4>
         )}
         {/* <h1><a href="https://twitter.com/pyrosvestiki/status/{feature.properties.id}" Tweet></a></h1> */}
         <p>
-          <strong>Id</strong> = {feature.properties.id}
           <hr />
-          <strong>Created At</strong> ={" "}
-          {Date(feature.properties.created_at).split(" ").slice(0, 5).join(" ")}
+          <strong>Date</strong> = {feature.properties.created_at}
+          {/* {Date(feature.properties.created_at).split(" ").slice(0, 5).join(" ")} */}
           <hr />
           <strong>Location</strong> = [{feature.geometry.coordinates[0]},
           {feature.geometry.coordinates[1]}]

@@ -117,15 +117,22 @@
 .leaflet-popup-content p {
   /* text-align: center; */
   color: rgb(0, 0, 0);
+
 }
 
 .leaflet-popup-content-wrapper {
-  background-color: rgba(153, 153, 153, 0.96);
+  background-color: #314351;
+  color: white;
   /* background-color: white; */
 }
 
+.leaflet-popup-content-wrapper a {
+  color: rgb(9, 204, 253);
+}
+
+
 .leaflet-popup-tip {
   /* background-color: white; */
-  background-color: rgba(153, 153, 153, 0.96);
+  background-color: #314351;
   /* background-color: rgba(255, 255, 255, 0.85); */
 }
