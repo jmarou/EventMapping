@@ -27,19 +27,25 @@ EVENTS_DICT = {
         0: "Διάφορα",
         1: "Σύλληψη-εξάρθρωση",
         2: "Εξιχνίαση-εξακρίβωση υπόθεσης",
-        3: "Εντοπισμός"
+        3: "Εντοπισμός",
     },
 }
 
 
 def get_geojson(
-    id: int, text: str, created_at: datetime, latitude: Float, longitude: Float
+    id: int,
+    text: str,
+    created_at: datetime,
+    latitude: Float,
+    longitude: Float,
+    category: str,
 ) -> json:
     geojson = {"type": "Feature"}
     geojson["properties"] = {
-        "id": str(id),  # id > javascript highest integer value 
+        "id": str(id),  # id > javascript highest integer value
         "created_at": created_at.strftime("%d/%m/%Y, %H:%M:%S"),
         "text": text,
+        "category": category,
     }
     geojson["geometry"] = {
         "type": "Point",
@@ -96,7 +102,12 @@ class PyrosvestikiTweets(Base):
 
     def __repr__(self):
         return get_geojson(
-            self.id, self.text, self.created_at, self.latitude, self.longitude
+            self.id,
+            self.text,
+            self.created_at,
+            self.latitude,
+            self.longitude,
+            EVENTS_DICT["pyrosvestiki"][self.category],
         )
 
 
@@ -148,7 +159,12 @@ class PoliceTweets(Base):
 
     def __repr__(self):
         return get_geojson(
-            self.id, self.text, self.created_at, self.latitude, self.longitude
+            self.id,
+            self.text,
+            self.created_at,
+            self.latitude,
+            self.longitude,
+            EVENTS_DICT["police"][self.category],
         )
 
 

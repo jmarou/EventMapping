@@ -156,20 +156,23 @@ let LeafletMap = (props) => {
     return renderToString(
       <div>
         {department === "Police" ? (
-          <h4 style={{ color: "#0e11db" }}>Hellenic Police <a style={{ color: "#0e11db"  }} target= "_blank" href={`https://twitter.com/pyrosvestiki/status/${feature.properties.id}`}> Tweet</a></h4>
+          <h4 style={{ color: "rgb(9, 204, 253)" }}>Hellenic Police <a style={{ color: "rgb(9, 204, 253)"  }} target= "_blank" href={`https://twitter.com/pyrosvestiki/status/${feature.properties.id}`}> Tweet</a></h4>
         ) : (
-          <h4 style={{ color: "#ce1c1c" }}>Pyrosvestiki <a style={{ color: "#ce1c1c" }} target= "_blank" href={`https://twitter.com/pyrosvestiki/status/${feature.properties.id}`}> Tweet</a></h4>
+          <h4 style={{ color: "#df3434" }}>Pyrosvestiki <a style={{ color: "#ce1c1c" }} target= "_blank" href={`https://twitter.com/pyrosvestiki/status/${feature.properties.id}`}> Tweet</a></h4>
         )}
-        {/* <h1><a href="https://twitter.com/pyrosvestiki/status/{feature.properties.id}" Tweet></a></h1> */}
         <p>
           <hr />
-          <strong>Date</strong> = {feature.properties.created_at}
+          <i class="fa fa-pie-chart"></i><strong>  Category</strong><br />
+          {feature.properties.category}
+          <hr />
+          <i class="fa fa-calendar"></i><strong>  Date</strong><br />
+          {feature.properties.created_at}
           {/* {Date(feature.properties.created_at).split(" ").slice(0, 5).join(" ")} */}
           <hr />
-          <strong>Location</strong> = [{feature.geometry.coordinates[0]},
-          {feature.geometry.coordinates[1]}]
+          <i class="fa fa-map-marker"></i><strong>  Location</strong><br />
+          [{feature.geometry.coordinates[0]}, {feature.geometry.coordinates[1]}]
           <hr />
-          <strong>Text</strong>
+          <i class="fa fa-newspaper-o"></i><strong>  Text</strong>
         </p>
       </div>
     );
