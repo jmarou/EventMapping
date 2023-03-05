@@ -2,6 +2,9 @@
 
 EventMapping is an open-source project developed in the context of the course _Modern Web Applications_ of <a href="https://www.ece.ntua.gr/en/postgraduate/2">MBA: Engineering - Economics Systems</a> hosted by <a href="https://www.ntua.gr/en/">NTUA</a> & <a href="https://www.unipi.gr/unipi/en/">UNIPI</a>.
 
+You can find the presentation of the diploma thesis held on 17th of February 2023 here: [EventMappingPresentation.pptx](https://github.com/jmarou/EventMapping/files/10892815/EventMappingPresentation.pptx)
+
+
 The project focuses on parsing tweets from the twitter accounts of <a href="https://twitter.com/hellenicpolice">👮🏽‍♀️ #Hellenic_police</a> and <a href="https://twitter.com/pyrosvestiki">👩🏼‍🚒  #Pyrosvestiki</a> and display them on a WebGIS map.
 
 ## Documentation
